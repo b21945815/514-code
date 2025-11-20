@@ -1,0 +1,26 @@
+# --- Jupyter Notebook Gereksizleri ---
+.ipynb_checkpoints/
+
+# --- Python Derleme ve Cache Dosyaları ---
+__pycache__/
+*.pyc
+
+# --- EĞİTİM ÇIKTILARI VE MODELLER (Bunlar çok büyüktür, GitHub'a atılmaz) ---
+my_router_model/
+results/
+*.pt
+*.bin
+*.safetensors
+*.json
+
+# --- Sanal Ortamlar (Eğer klasör içinde oluşturduysan) ---
+env/
+venv/
+.env
+
+# --- İşletim Sistemi Gereksizleri ---
+.DS_Store
+Thumbs.db
+
+# --- Loglar ---
+*.log
