@@ -48,19 +48,33 @@ plt.legend()
 plt.savefig('comparison_length.png')
 plt.show()
 
-# 3. Database Overlap (Unique DB Counts)
-db_counts = {
-    'Dataset': ['Train', 'Test (Dev)'],
-    'Unique Databases': [train_df['db_id'].nunique(), test_df['db_id'].nunique()]
-}
-db_df = pd.DataFrame(db_counts)
-plt.figure(figsize=(8, 5))
-sns.barplot(data=db_df, x='Dataset', y='Unique Databases', palette='magma')
-plt.title('Unique Databases per Dataset')
-plt.ylabel('Count')
-for i, v in enumerate(db_df['Unique Databases']):
-    plt.text(i, v + 0.5, str(v), ha='center', fontweight='bold')
-plt.savefig('unique_db_counts.png')
+# 3. Database Overlap (Intersection Analysis)
+train_dbs = set(train_df['db_id'].unique())
+test_dbs = set(test_df['db_id'].unique())
+
+common_dbs = train_dbs.intersection(test_dbs)
+only_train = train_dbs - test_dbs
+only_test = test_dbs - train_dbs
+
+print(f"Databases in both sets: {len(common_dbs)}")
+print(f"Databases ONLY in Train: {len(only_train)}")
+print(f"Databases ONLY in Test (Unseen): {len(only_test)}")
+
+# Visualization: Set Comparison
+overlap_stats = pd.DataFrame({
+    'Category': ['Common', 'Only Train', 'Only Test (Unseen)'],
+    'Count': [len(common_dbs), len(only_train), len(only_test)]
+})
+
+plt.figure(figsize=(10, 6))
+sns.barplot(data=overlap_stats, x='Category', y='Count', palette='coolwarm')
+plt.title('Database Distribution: Seen vs Unseen')
+plt.ylabel('Number of Databases')
+
+for i, v in enumerate(overlap_stats['Count']):
+    plt.text(i, v + 0.1, str(v), ha='center', fontweight='bold')
+
+plt.savefig('db_intersection_analysis.png')
 plt.show()
 
 # 4. Evidence Usage (External Knowledge)
