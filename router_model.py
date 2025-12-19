@@ -4,6 +4,17 @@ import pandas as pd
 from datasets import Dataset
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification, Trainer, TrainingArguments
 import torch.nn.functional as F
+import random
+import numpy as np
+import json
+from sklearn.metrics import f1_score, classification_report, confusion_matrix
+
+SEED = 42 
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(SEED)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -123,7 +134,16 @@ data = [
     {"text": "Find the order linked to this tracking number.", "label": 1},
     {"text": "Get the profile picture URL for user 5.", "label": 1},
 ]
-#TODO add the data from train test split
+
+def get_bird_queries(file_path, count):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        bird_data = json.load(f)
+    sampled = random.sample(bird_data, min(count, len(bird_data)))
+    return [{"text": item['question'], "label": 1} for item in sampled]
+
+bird_train_queries = get_bird_queries('data/train/train.json', 50)
+data.extend(bird_train_queries)
+
 # DATA
 df = pd.DataFrame(data)
 dataset = Dataset.from_pandas(df)
@@ -193,19 +213,70 @@ def predict_intent(text):
     return label_map[predicted_id.item()], score.item()
 
 # Test 
-#TODO use real test data as well
-test_sentences = [
-    "Hey, what's up?",
-    "Select * from users where age > 25",
-    "Show me the inventory list",
-    "I am really tired today",
-    "How many items did we sell yesterday?",
-    "Tell me a story about space"
+original_test_labeled = [
+    ("Hey, what's up?", 0),
+    ("Select * from users where age > 25", 1),
+    ("Show me the inventory list", 1),
+    ("I am really tired today", 0),
+    ("How many items did we sell yesterday?", 1),
+    ("Tell me a story about space", 0)
 ]
+new_general_chats = [
+    "How's the weather today?", "Can you tell me a story?", "I'm looking for a gift idea.",
+    "What is your favorite movie?", "Tell me about history.", "Do you know any poems?",
+    "I need a workout routine.", "How do I make pancakes?", "Translate this to French.",
+    "Give me some motivation.", "What is the capital of Italy?", "Who won the World Cup?",
+    "Tell me a science fact.", "I feel lonely.", "What are you doing?", 
+    "How does a computer work?", "Recommend a book.", "Good afternoon!",
+    "Where is the nearest park?", "Can humans breathe on Mars?"
+]
+bird_test_queries = get_bird_queries('data/dev_20240627/dev.json', 20)
+test_sentences_sql = [item['text'] for item in bird_test_queries]
 
-print(f"{'Input':<40} | {'Prediction':<15} | {'Trust'}")
-print("-" * 70)
+labeled_test_data = []
+for txt in new_general_chats:
+    labeled_test_data.append((txt, 0))
 
-for sentence in test_sentences:
-    label, conf = predict_intent(sentence)
-    print(f"{sentence:<40} | {label:<15} | %{conf*100:.1f}")
+for txt in test_sentences_sql:
+    labeled_test_data.append((txt, 1))
+
+labeled_test_data.extend(original_test_labeled)
+random.shuffle(labeled_test_data)
+
+y_true = []
+y_pred = []
+correct_predictions = 0
+
+print(f"{'Input':<50} | {'True':<7} | {'Pred':<7} | {'Conf'}")
+print("-" * 85)
+
+for text, true_label in labeled_test_data:
+    pred_label_str, conf = predict_intent(text)
+    
+    pred_id = 1 if pred_label_str == "DATABASE QUERY" else 0
+    
+    y_true.append(true_label)
+    y_pred.append(pred_id)
+    
+    if pred_id == true_label:
+        correct_predictions += 1
+    if pred_id != true_label:
+            label_map = {0: "CHAT", 1: "SQL"}
+            print(f"{text[:48]:<50} | {label_map[true_label]:<7} | {label_map[pred_id]:<7} | %{conf*100:.1f}")
+    if len(y_true) <= 5:
+        print(f"{text[:48]:<50} | {true_label:<7} | {pred_id:<7} | %{conf*100:.1f}")
+
+total_samples = len(labeled_test_data)
+accuracy = (correct_predictions / total_samples) * 100
+f1 = f1_score(y_true, y_pred)
+
+print("-" * 85)
+print(f"\n--- FINAL RESULTS ---")
+print(f"Total Test Samples    : {total_samples}")
+print(f"Correct Predictions   : {correct_predictions}")
+print(f"Overall Accuracy      : %{accuracy:.2f}")
+print(f"F1-Score              : {f1:.4f}")
+print("-" * 30)
+
+print("\nDETAILED CLASSIFICATION REPORT:")
+print(classification_report(y_true, y_pred, target_names=["GENERAL CHAT", "DATABASE QUERY"]))
