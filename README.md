@@ -1,0 +1,5 @@
+INSTALL THE DATA FROM https://bird-bench.github.io
+IN YOUR PROJECT UNZIP THE DATA TO A FOLDER NAMED DATA
+DATA
+ --dev_20240627
+ --train
