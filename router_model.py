@@ -194,7 +194,7 @@ loaded_tokenizer = DistilBertTokenizer.from_pretrained(path)
 loaded_model = DistilBertForSequenceClassification.from_pretrained(path)
 loaded_model.to(device)
 
-def predict_intent(text):
+def predict_intent(text, loaded_tokenizer, loaded_model):
     """
     Analyze the text:
     0 -> General Chat
@@ -251,7 +251,7 @@ print(f"{'Input':<50} | {'True':<7} | {'Pred':<7} | {'Conf'}")
 print("-" * 85)
 
 for text, true_label in labeled_test_data:
-    pred_label_str, conf = predict_intent(text)
+    pred_label_str, conf = predict_intent(text, loaded_tokenizer, loaded_model)
     
     pred_id = 1 if pred_label_str == "DATABASE QUERY" else 0
     
