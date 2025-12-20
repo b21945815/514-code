@@ -11,31 +11,46 @@ class QueryDecomposer:
     """
     
     DECOMPOSITION_PROMPT_TEMPLATE = """
-You are a SQL Decomposition Specialist. 
-Your task is to analyze a natural language question and break it down for a Hybrid SQL approach.
+You are a SQL Decomposition Expert. Break down the user's natural language request into a JSON object containing a LIST of "tasks".
 
 DATABASE SCHEMA AND METADATA:
 {db_metadata}
 
 INSTRUCTIONS:
-1. "main_table": Identify the primary table where the target data resides.
-2. "structural_logic": List ONLY necessary JOINs. If the target column is in the main_table, do not join others unless filtered or needed for group by etc. .
-3. "semantic_search": Terms for Vector DB lookup.
-4. "exact_filters": Direct SQL filters (e.g., gender = 'F').
-5. "group_by": Columns for aggregation categories (e.g., "per district").
-6. "target": The specific columns or aggregations (e.g., ["AVG(trans.amount)"]).
+1. "tasks": A list of independent query blocks. If the user asks for two unrelated things, provide two separate task objects.
+2. "subqueries": A dictionary within a task where keys are aliases (e.g., "@sub1"). Values MUST be full query objects.
+3. "structural_logic": List of objects: {{"type": "JOIN", "table": "table as alias", "condition": "a.id = b.id"}} or {{"type": "UNION/INTERSECT", "task_id": 2}}.
+4. "semantic_mappings": Terms for Vector DB lookup (e.g., {{"district.A2": "Prague"}}).
+5. "is_achievable": False if the schema cannot answer the question
+6. "error": If is_achievable is false, explain why to the user.
 
-OUTPUT FORMAT:
-Return ONLY a JSON object.
-Example format:
+OUTPUT FORMAT EXAMPLE:
 {{
-  "main_table": "table",
-  "structural_logic": ["JOIN table with table2"],
-  "semantic_search": {{"table.column": ["term"]}},
-  "exact_filters": {{"table.column": "value"}},
-  "group_by": ["table.column"],
-  "intent": "SELECT / COUNT / AVG / SUM",
-  "target": ["table.amount"]
+  "tasks": [
+    {{
+      "task_id": 1,
+      "is_achievable": true,
+      "error": null,
+      "main_table": "trans as t",
+      "intent": "SELECT",
+      "structural_logic": [
+        {{ "type": "JOIN", "table": "account as a", "condition": "t.account_id = a.account_id" }}
+      ],
+      "semantic_mappings": {{"t.k_symbol": "insurance"}},
+      "exact_filters": {{"t.balance": "> @sub1"}},
+      "group_by": ["t.account_id"],
+      "order_by": ["t.account_id desc"],
+      "having_filters": ["AVG(t.amount) > 1000"],
+      "subqueries": {{
+        "@sub1": {{
+           "main_table": "trans",
+           "intent": "AVG",
+           "target": ["balance"]
+        }}
+      }},
+      "target": ["t.account_id", "t.balance"]
+    }}
+  ]
 }}
 """
 
@@ -57,9 +72,8 @@ Example format:
         """
         db_meta = self.db_info.get(db_id)
         if not db_meta:
-            return {"error": f"Database {db_id} not found in info file."}
+            return {"tasks": [{"is_achievable": False, "error": f"DB {db_id} not found"}]}
 
-        # Prompt
         full_prompt = self.DECOMPOSITION_PROMPT_TEMPLATE.format(
             db_metadata=json.dumps(db_meta, indent=2)
         )
@@ -75,24 +89,45 @@ Example format:
                 response_format={"type": "json_object"}
             )
             
-            return json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content.strip()
+            return json.loads(content)
         
         except Exception as e:
-            return {"error": f"Groq API Error: {str(e)}"}
+            return {"tasks": [{"is_achievable": False, "error": str(e)}]}
 
-# TEST
+# --- TESTING SECTION ---
 if __name__ == "__main__":
     decomposer = QueryDecomposer()
     
-    sample_query = "Show me the average balance of female clients from Prague who have gold cards."
+    # Test queries including simple, complex, and multi-task scenarios
+    test_queries = [
+        "Show me the average balance of female clients from Prague who have gold cards.", # Complex join
+        "List all loans in Prague and find the youngest client in Brno.", # Independent Multi-Task
+        "Who are the clients with a balance higher than the average balance?", # Subquery
+        "Order pizza for me." # Should trigger is_achievable: False,
+        "List the IDs of clients who live in Prague and union them with the IDs of clients who have a gold card." # Union
+    ]
     
-    print(f"--- TESTING DECOMPOSER ---")
-    print(f"Input Query: {sample_query}\n")
+    print(f"{'='*20} TESTING DECOMPOSER {'='*20}\n")
     
-    result = decomposer.decompose_query("financial", sample_query)
-    
-    if "error" not in result:
-        print("Decomposition Successful:")
-        print(json.dumps(result, indent=4))
-    else:
-        print(f"Failed: {result['error']}")
+    for i, sample_query in enumerate(test_queries, 1):
+        print(f"Test {i}: {sample_query}")
+        
+        result = decomposer.decompose_query("financial", sample_query)
+        
+        tasks = result.get("tasks", [])
+        
+        if tasks:
+            for task in tasks:
+                task_id = task.get("task_id", "N/A")
+                if task.get("is_achievable"):
+                    print(f"Task {task_id} Decomposed Successfully")
+                else:
+                    print(f"Task {task_id} Failed: {task.get('error')}")
+            
+            print("\nFull Response JSON:")
+            print(json.dumps(result, indent=4))
+        else:
+            print("Unexpected response format or empty task list.")
+            
+        print("-" * 50)
