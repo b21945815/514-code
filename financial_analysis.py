@@ -115,3 +115,59 @@ for fk in fin_tables['foreign_keys']:
     ref_table_idx = fin_tables['column_names_original'][ref_col_idx][0]
     
     print(f"Connection: {table_names[table_idx]}.{col_name} -> {table_names[ref_table_idx]}.{ref_col_name}")
+
+def get_select_type(sql):
+    sql = sql.upper()
+    if 'SELECT COUNT' in sql: return 'COUNT'
+    if 'SELECT SUM' in sql: return 'SUM'
+    if 'SELECT AVG' in sql: return 'AVG'
+    if 'SELECT MIN' in sql or 'SELECT MAX' in sql: return 'MIN/MAX'
+    return 'COLUMN/VALUE'
+
+keywords = ['JOIN', 'HAVING', 'UNION', 'GROUP BY', 'ORDER BY', 'WHERE', 'LIMIT', 'INTERSECT', 'EXCEPT']
+
+def get_keyword_stats(df):
+    total = len(df)
+    stats = []
+    for kw in keywords:
+        count = df['SQL'].str.upper().str.contains(kw).sum()
+        ratio = (count / total) * 100
+        stats.append({'Keyword': kw, 'Ratio (%)': round(ratio, 2)})
+    return stats
+
+fin_df['Select_Type'] = fin_df['SQL'].apply(get_select_type)
+keyword_stats_list = get_keyword_stats(fin_df)
+
+# 7. VISUALIZATIONS
+# --- Select Type Distribution ---
+plt.figure(figsize=(10, 6))
+fin_df['Select_Type'].value_counts().plot.pie(autopct='%1.1f%%', colors=sns.color_palette('pastel'))
+plt.title('BirdSQL: Select Type Distribution (Financial)')
+plt.ylabel('')
+plt.savefig('distribution_select_types_finance.png')
+plt.show()
+
+# --- Keyword Ratio Distribution ---
+stats_df = pd.DataFrame(keyword_stats_list)
+
+plt.figure(figsize=(14, 7))
+sns.barplot(data=stats_df, x='Keyword', y='Ratio (%)')
+
+plt.title('SQL Complexity Analysis: Keyword Usage Ratio (%) (Finance)', fontsize=15)
+plt.ylabel('Percentage of Queries (%)', fontsize=12)
+plt.xlabel('SQL Keywords', fontsize=12)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+ax = plt.gca()
+for p in ax.patches:
+    if p.get_height() > 0:
+        ax.annotate(f'%{p.get_height():.1f}', 
+                    (p.get_x() + p.get_width() / 2., p.get_height()), 
+                    ha = 'center', va = 'center', 
+                    xytext = (0, 9), 
+                    textcoords = 'offset points',
+                    fontsize=10, fontweight='bold')
+
+plt.tight_layout()
+plt.savefig('sql_keyword_ratios_finance.png')
+plt.show()
