@@ -33,6 +33,7 @@ OUTPUT FORMAT EXAMPLE:
       "error": null,
       "main_table": "trans as t",
       "intent": "SELECT",
+      "limit by": "10",
       "structural_logic": [
         {{ "type": "JOIN", "table": "account as a", "condition": "t.account_id = a.account_id" }}
       ],
