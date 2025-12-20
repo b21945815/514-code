@@ -1,0 +1,63 @@
+{
+  "financial": {
+    "db_id": "financial",
+    "description": "Czech banking system database with entities for clients, accounts, loans, and transaction history.",
+    "tables": {
+      "account": ["account_id", "district_id", "frequency", "date"],
+      "card": ["card_id", "disp_id", "type", "issued"],
+      "client": ["client_id", "gender", "birth_date", "district_id"],
+      "disp": ["disp_id", "client_id", "account_id", "type"],
+      "district": ["district_id", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A10", "A11", "A12", "A13", "A14", "A15", "A16"],
+      "loan": ["loan_id", "account_id", "date", "amount", "duration", "payments", "status"],
+      "order": ["order_id", "account_id", "bank_to", "account_to", "amount", "k_symbol"],
+      "trans": ["trans_id", "account_id", "date", "type", "operation", "amount", "balance", "k_symbol"]
+    },
+    "relationships": [
+      "account.district_id = district.district_id",
+      "card.disp_id = disp.disp_id",
+      "client.district_id = district.district_id",
+      "disp.client_id = client.client_id",
+      "disp.account_id = account.account_id",
+      "loan.account_id = account.account_id",
+      "order.account_id = account.account_id",
+      "trans.account_id = account.account_id"
+    ],
+    "column_descriptions": {
+      "district.A4": "Number of inhabitants",
+      "district.A5": "Number of municipalities with inhabitants < 499",
+      "district.A6": "Number of municipalities with inhabitants 500-1999",
+      "district.A7": "Number of municipalities with inhabitants 2000-9999",
+      "district.A8": "Number of municipalities with inhabitants > 10000",
+      "district.A10": "Ratio of urban inhabitants",
+      "district.A11": "Average salary",
+      "district.A14": "Number of entrepreneurs per 1000 inhabitants",
+      "account.frequency": "POPLATEK MESICNE: monthly, POPLATEK TYDNE: weekly, POPLATEK PO OBRATU: after transaction"
+    },
+    "value_mappings": {
+      "k_symbol": {
+        "POJISTNE": "insurance payment",
+        "SLUZBY": "payment for statement",
+        "UROK": "interest credited",
+        "SANKC. UROK": "sanction interest",
+        "SIPO": "household payment",
+        "DUCHOD": "old-age pension",
+        "UVER": "loan payment"
+      },
+      "loan.status": {
+        "A": "finished, no problems",
+        "B": "finished, unpaid",
+        "C": "running, OK",
+        "D": "running, in debt"
+      },
+      "card.type": ["junior", "classic", "gold"],
+      "disp.type": ["OWNER", "USER", "DISPONENT"]
+    },
+    "semantic_vdb_columns": [
+      "district.A2",
+      "district.A3",
+      "trans.k_symbol",
+      "order.k_symbol",
+      "account.frequency"
+    ]
+  }
+}

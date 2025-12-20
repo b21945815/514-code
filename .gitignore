@@ -9,7 +9,6 @@ results/
 *.pt
 *.bin
 *.safetensors
-*.json
 
 env/
 venv/
