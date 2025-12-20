@@ -3,11 +3,11 @@ import sys
 import pandas as pd
 from datasets import Dataset
 from transformers import DistilBertTokenizer, DistilBertForSequenceClassification, Trainer, TrainingArguments
-import torch.nn.functional as F
 import random
 import numpy as np
 import json
-from sklearn.metrics import f1_score, classification_report, confusion_matrix
+from sklearn.metrics import f1_score, classification_report
+from router_model_helper import predict_intent
 
 SEED = 42 
 random.seed(SEED)
@@ -193,24 +193,6 @@ path = "./my_router_model"
 loaded_tokenizer = DistilBertTokenizer.from_pretrained(path)
 loaded_model = DistilBertForSequenceClassification.from_pretrained(path)
 loaded_model.to(device)
-
-def predict_intent(text, loaded_tokenizer, loaded_model):
-    """
-    Analyze the text:
-    0 -> General Chat
-    1 -> Database Query
-    """
-    inputs = loaded_tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128).to(device)
-    
-    with torch.no_grad():
-        logits = loaded_model(**inputs).logits
-    
-    # Probability
-    probs = F.softmax(logits, dim=-1)
-    score, predicted_id = torch.max(probs, dim=1)
-    
-    label_map = {0: "GENERAL CHAT", 1: "DATABASE QUERY"}
-    return label_map[predicted_id.item()], score.item()
 
 # Test 
 original_test_labeled = [

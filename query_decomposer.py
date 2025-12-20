@@ -18,20 +18,24 @@ DATABASE SCHEMA AND METADATA:
 {db_metadata}
 
 INSTRUCTIONS:
-1. Identify "Structural Logic": Steps for SQL (JOINs, GROUP BY, ORDER BY).
-2. Identify "Semantic Search": Terms for Vector DB lookup (e.g., location names, payment descriptions).
-3. Identify "Exact Filters": Direct SQL filters (e.g., gender, numeric thresholds).
-4. Identify "Target Columns": The columns or aggregations the user wants to see.
+1. "main_table": Identify the primary table where the target data resides.
+2. "structural_logic": List ONLY necessary JOINs. If the target column is in the main_table, do not join others unless filtered or needed for group by etc. .
+3. "semantic_search": Terms for Vector DB lookup.
+4. "exact_filters": Direct SQL filters (e.g., gender = 'F').
+5. "group_by": Columns for aggregation categories (e.g., "per district").
+6. "target": The specific columns or aggregations (e.g., ["AVG(trans.amount)"]).
 
 OUTPUT FORMAT:
-Return ONLY a JSON object. DO NOT explain your reasoning.
+Return ONLY a JSON object.
 Example format:
 {{
-  "structural_logic": ["JOIN account with loan", "Filter by gender"],
-  "semantic_search": {{"table.column": ["search_term1", "search_term2"]}},
+  "main_table": "table",
+  "structural_logic": ["JOIN table with table2"],
+  "semantic_search": {{"table.column": ["term"]}},
   "exact_filters": {{"table.column": "value"}},
+  "group_by": ["table.column"],
   "intent": "SELECT / COUNT / AVG / SUM",
-  "target": ["client.name", "client.age", "trans.balance"]
+  "target": ["table.amount"]
 }}
 """
 
