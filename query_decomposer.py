@@ -11,45 +11,89 @@ class QueryDecomposer:
     """
     
     DECOMPOSITION_PROMPT_TEMPLATE = """
-You are a SQL Decomposition Expert. Break down the user's natural language request into a JSON object containing a LIST of "tasks".
+You are a SQL Decomposition Expert that uses reason. When decomposition check to query to see if your output really returning the asked data with correct filters.
 
-DATABASE SCHEMA AND METADATA:
+You are strictly faithful to this database schema:
 {db_metadata}
 
-INSTRUCTIONS:
-1. "tasks": A list of independent query blocks. If the user asks for two unrelated things, provide two separate task objects.
-2. "subqueries": A dictionary within a task where keys are aliases (e.g., "@sub1"). Values MUST be full query objects.
-3. "structural_logic": List of objects: {{"type": "JOIN", "table": "table as alias", "condition": "a.id = b.id"}} or {{"type": "UNION/INTERSECT", "task_id": 2}}.
-4. "semantic_mappings": Terms for Vector DB lookup (e.g., {{"district.A2": "Prague"}}).
-5. "is_achievable": False if the schema cannot answer the question
-6. "error": If is_achievable is false, explain why to the user.
+Construct a structured JSON object based on the definitions below:
 
-OUTPUT FORMAT EXAMPLE:
+DATA STRUCTURE DEFINITIONS:
+
+1. **ValueNode**: Represents data units or logic blocks.
+   - LITERAL:    {{ "type": "LITERAL", "value": 100 or "2023-01-01" }}
+   - SEMANTIC:   {{ "type": "SEMANTIC", "value": "rich districts" }}
+   - COLUMN:     {{ "type": "COLUMN", "value": "SUM(t.amount)" }}
+   - COLUMN:     {{ "type": "COLUMN", "value": "t.amount" }}
+   - SUBQUERY:   {{ "type": "SUBQUERY", "value": "@sub1" }}
+   - EXPRESSION: {{ "type": "EXPRESSION", "value": "CASE WHEN t.amount > 0 THEN 1 ELSE 0 END" or "SUM(t.amount)" }} 
+     (Use EXPRESSION for Math, Functions, and CASE logic)
+
+2. **SelectNode**: Items in the "target" list.
+   - {{ "value": ValueNode, "alias": "column_alias" }} 
+
+3. **OrderNode**: Items in the "order_by" list.
+   - {{ "value": ValueNode, "direction": "ASC" | "DESC" }}
+
+4. **ConditionNode**: Recursive logic for "where_clause" and "having_clause".
+   - LEAF:   {{ "left": ValueNode, "operator": "=", "right": ValueNode }}
+   - BRANCH: {{ "logic": "AND" | "OR" || "IFNULL" || "IFF" etc., "conditions": [ConditionNode, ConditionNode] }}
+
+5. **LogicNode**: Elements inside "structural_logic".
+   - JOIN:   {{ "type": "INNER JOIN", "table": "account as a", "condition": ConditionNode }}
+   - SET_OP: {{ "type": "UNION" | "INTERSECT", "target_task_id": 2 }}
+
+RULES:
+1 - Use SEMANTIC type for ValueNode instead of LITERAL when the table column is semantic (Not a number and not a date)
+2 - If you can not generate valid output for a given query set is_achievable to false and explain the reason in error 
+3 - Intent Analysis: Distinguish between 'Entity Definition' and 'Entity Activity' If the query implies an activity, prioritize activity tables over entity tables.
+4 - Semantic Alignment: Ensure the selected table's description semantically supports the specific action verbs used in the query
+OUTPUT FORMAT EXAMPLE 
 {{
   "tasks": [
     {{
       "task_id": 1,
       "is_achievable": true,
       "error": null,
-      "main_table": "trans as t",
-      "intent": "SELECT",
-      "limit by": "10",
+      "limit_by": 10,
+      "main_table": "orders as o",
       "structural_logic": [
-        {{ "type": "JOIN", "table": "account as a", "condition": "t.account_id = a.account_id" }}
-      ],
-      "semantic_mappings": {{"t.k_symbol": "insurance"}},
-      "exact_filters": {{"t.balance": "> @sub1"}},
-      "group_by": ["t.account_id"],
-      "order_by": ["t.account_id desc"],
-      "having_filters": ["AVG(t.amount) > 1000"],
-      "subqueries": {{
-        "@sub1": {{
-           "main_table": "trans",
-           "intent": "AVG",
-           "target": ["balance"]
+        {{ 
+           "type": "INNER JOIN", 
+           "table": "users as u", 
+           "condition": {{ "left": {{ "type": "COLUMN", "value": "o.user_id" }}, "operator": "=", "right": {{ "type": "COLUMN", "value": "u.id" }} }} 
         }}
+      ],
+      "where_clause": {{
+         "logic": "AND",
+         "conditions": [
+            {{ "left": {{ "type": "COLUMN", "value": "u.userType" }}, "operator": "IN", "right": {{ "type": "SEMANTIC", "value": "premium account" }},
+            {{ "left": {{ "type": "COLUMN", "value": "o.total_amount" }}, "operator": ">", "right": {{ "type": "SUBQUERY", "value": "@avg_order" }} }}
+         ]
       }},
-      "target": ["t.account_id", "t.balance"]
+        "target": {{
+            "targets"[
+                {{ "value": {{ "type": "COLUMN", "value": "u.username" }}, "alias": "user" }},
+                {{ "value": {{ "type": "EXPRESSION", "value": "CASE WHEN SUM(o.total_amount) > 5000 THEN 'VIP' ELSE 'Regular' END" }}, "alias": "status" }}
+            ]
+        "use_distinct": true
+      }},
+      "group_by": ["u.username"],
+      "having_clause": {{
+         "logic": "AND",
+         "conditions": [
+             {{ "left": {{ "type": "EXPRESSION", "value": "COUNT(o.id)" }}, "operator": ">", "right": {{ "type": "LITERAL", "value": 5 }} }}
+         ]
+      }},
+      "order_by": [
+         {{ "value": {{ "type": "EXPRESSION", "value": "status" }}, "direction": "DESC" }}
+      ],
+      "subqueries": {{
+         "@avg_order": {{
+             "main_table": "orders",
+             "target": [ {{ "value": {{ "type": "EXPRESSION", "value": "AVG(total_amount)" }}, "alias": null }} ]
+         }}
+      }}
     }}
   ]
 }}
@@ -61,7 +105,8 @@ OUTPUT FORMAT EXAMPLE:
             raise ValueError("GROQ_API_KEY not found in environment variables.")
         
         self.client = Groq(api_key=self.api_key)
-        self.model = "llama-3.3-70b-versatile"
+        self.model = "openai/gpt-oss-120b"
+        self.temperature =0.75
         
         with open(info_path, 'r', encoding='utf-8') as f:
             self.db_info = json.load(f)
@@ -78,7 +123,6 @@ OUTPUT FORMAT EXAMPLE:
         full_prompt = self.DECOMPOSITION_PROMPT_TEMPLATE.format(
             db_metadata=json.dumps(db_meta, indent=2)
         )
-
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -105,8 +149,11 @@ if __name__ == "__main__":
         "Show me the average balance of female clients from Prague who have gold cards.", # Complex join
         "List all loans in Prague and find the youngest client in Brno.", # Independent Multi-Task
         "Who are the clients with a balance higher than the average balance?", # Subquery
-        "Order pizza for me." # Should trigger is_achievable: False,
-        "List the IDs of clients who live in Prague and union them with the IDs of clients who have a gold card." # Union
+        "Order pizza for me.", # Should trigger is_achievable: False,
+        "List the IDs of clients who live in Prague and union them with the IDs of clients who have a gold card.", # Union,
+        "Name the account numbers of female clients who are oldest and have lowest average salary?", # moderate
+        "List out the accounts who have the earliest trading date in 1995 ?", # simple
+        "For the branch which located in the south Bohemia with biggest number of inhabitants, what is the percentage of the male clients?" # challenging
     ]
     
     print(f"{'='*20} TESTING DECOMPOSER {'='*20}\n")
