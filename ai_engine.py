@@ -11,7 +11,7 @@ class QueryDecomposer:
     """
     
     DECOMPOSITION_PROMPT_TEMPLATE = """
-You are a SQL Decomposition Expert that uses reason. When decomposition check to query to see if your output really returning the asked data with correct filters.
+You are a SQLLite Decomposition Expert that uses reason. When decomposition check to query to see if your output really returning the asked data with correct filters.
 
 You are strictly faithful to this database schema:
 {db_metadata}
@@ -22,7 +22,7 @@ DATA STRUCTURE DEFINITIONS:
 
 1. **ValueNode**: Represents data units or logic blocks.
    - LITERAL:    {{ "type": "LITERAL", "value": 100 or "2023-01-01" }}
-   - SEMANTIC:   {{ "type": "SEMANTIC", "value": "rich districts" }}
+   - SEMANTIC:   {{ "type": "SEMANTIC", "value": "rich districts", "column": "district", "table": "districts" }}
    - COLUMN:     {{ "type": "COLUMN", "value": "SUM(t.amount)" }}
    - COLUMN:     {{ "type": "COLUMN", "value": "t.amount" }}
    - SUBQUERY:   {{ "type": "SUBQUERY", "value": "@sub1" }}
@@ -67,7 +67,7 @@ OUTPUT FORMAT EXAMPLE
       "where_clause": {{
          "logic": "AND",
          "conditions": [
-            {{ "left": {{ "type": "COLUMN", "value": "u.userType" }}, "operator": "IN", "right": {{ "type": "SEMANTIC", "value": "premium account" }},
+            {{ "left": {{ "type": "COLUMN", "value": "u.userType" }}, "operator": "IN", "right": {{ "type": "SEMANTIC", "value": "premium account", "table": "users", "column": "userType" }},
             {{ "left": {{ "type": "COLUMN", "value": "o.total_amount" }}, "operator": ">", "right": {{ "type": "SUBQUERY", "value": "@avg_order" }} }}
          ]
       }},
@@ -139,43 +139,3 @@ OUTPUT FORMAT EXAMPLE
         
         except Exception as e:
             return {"tasks": [{"is_achievable": False, "error": str(e)}]}
-
-# --- TESTING SECTION ---
-if __name__ == "__main__":
-    decomposer = QueryDecomposer()
-    
-    # Test queries including simple, complex, and multi-task scenarios
-    test_queries = [
-        "Show me the average balance of female clients from Prague who have gold cards.", # Complex join
-        "List all loans in Prague and find the youngest client in Brno.", # Independent Multi-Task
-        "Who are the clients with a balance higher than the average balance?", # Subquery
-        "Order pizza for me.", # Should trigger is_achievable: False,
-        "List the IDs of clients who live in Prague and union them with the IDs of clients who have a gold card.", # Union,
-        "Name the account numbers of female clients who are oldest and have lowest average salary?", # moderate
-        "List out the accounts who have the earliest trading date in 1995 ?", # simple
-        "For the branch which located in the south Bohemia with biggest number of inhabitants, what is the percentage of the male clients?" # challenging
-    ]
-    
-    print(f"{'='*20} TESTING DECOMPOSER {'='*20}\n")
-    
-    for i, sample_query in enumerate(test_queries, 1):
-        print(f"Test {i}: {sample_query}")
-        
-        result = decomposer.decompose_query("financial", sample_query)
-        
-        tasks = result.get("tasks", [])
-        
-        if tasks:
-            for task in tasks:
-                task_id = task.get("task_id", "N/A")
-                if task.get("is_achievable"):
-                    print(f"Task {task_id} Decomposed Successfully")
-                else:
-                    print(f"Task {task_id} Failed: {task.get('error')}")
-            
-            print("\nFull Response JSON:")
-            print(json.dumps(result, indent=4))
-        else:
-            print("Unexpected response format or empty task list.")
-            
-        print("-" * 50)

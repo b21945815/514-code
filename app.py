@@ -1,6 +1,7 @@
 import streamlit as st
 from router_model_helper import load_router, predict_intent
-from query_decomposer import QueryDecomposer
+from ai_engine import QueryDecomposer
+from sql_compiler import JSONToSQLCompiler
 
 st.set_page_config(page_title="BirdSQL Execution Plan", layout="wide")
 
@@ -12,7 +13,6 @@ def init_models():
 
 tokenizer, model, decomposer = init_models()
 
-# Sidebar
 st.sidebar.title("🗄️ Control Panel")
 selected_db = st.sidebar.selectbox("Active Database", ["financial"])
 
@@ -27,7 +27,7 @@ if user_input:
         with st.chat_message("assistant"):
             st.write(f"**Intent Detected:** General Chat ({score*100:.1f}%)")
             st.write("""
-            I am the **Natural Wuery to SQL Assistant**. My specialized job is to:
+            I am the **Natural Query to SQL Assistant**. My specialized job is to:
             1. **Analyze** your natural language questions about the database.
             2. **Decompose** complex requests into logical execution steps (Tasks).
             3. **Bridge** the gap between human language and SQL using a Hybrid approach.
@@ -42,29 +42,37 @@ if user_input:
             if not tasks:
                 st.warning("Decomposer returned no tasks for this query.")
             else:
-                st.subheader("Step-by-Step Execution Plan")
-                
-                for i, task in enumerate(tasks):
-                    t_id = task.get("task_id")
-                    with st.expander(f"STEP {i+1} | Task ID: {t_id}", expanded=True):
-                        if not task.get("is_achievable", True):
-                            st.error(f"Logical Error: {task.get('error')}")
-                            st.json(task) 
-                        else:
-                            st.json(task)                    
+                has_error = any(not task.get("is_achievable", True) for task in tasks)
+                compiler = JSONToSQLCompiler(response)
 
-                    structural_logic = task.get("structural_logic", [])
-                
-                    set_ops = [l for l in structural_logic if l.get("type") in ["UNION", "INTERSECT", "EXCEPT"]]
-                    
-                    if set_ops:
-                        for op in set_ops:
-                            target_id = op.get("task_id")
-                            op_name = op.get("type")
-                            st.markdown(f"""
-                                <div style="border-left: 5px solid #ff4b4b; padding-left: 20px; margin: 10px 0;">
-                                    <h3 style="color: #ff4b4b;">⚡ {op_name}</h3>
-                                    <p style="opacity: 0.7;">Combine results with <b>Task ID: {target_id}</b></p>
-                                </div>
-                            """, unsafe_allow_html=True)
-                    
+                if has_error:
+                    st.subheader("Execution Plan (Errors Detected)")
+                    for i, task in enumerate(tasks):
+                        t_id = task.get("task_id")
+                        with st.expander(f"STEP {i+1} | Task ID: {t_id}", expanded=True):
+                            if not task.get("is_achievable", True):
+                                st.error(f"Logical Error: {task.get('error')}")
+                                st.json(task)
+                            else:
+                                st.json(task)
+                                
+                        structural_logic = task.get("structural_logic", [])
+                        set_ops = [l for l in structural_logic if l.get("type") in ["UNION", "INTERSECT", "EXCEPT"]]
+                        
+                        if set_ops:
+                            for op in set_ops:
+                                target_id = op.get("target_task_id")
+                                op_name = op.get("type")
+                                st.markdown(f"""
+                                    <div style="border-left: 5px solid #ff4b4b; padding-left: 20px; margin: 10px 0;">
+                                        <h3 style="color: #ff4b4b;">⚡ {op_name}</h3>
+                                        <p style="opacity: 0.7;">Combine results with <b>Task ID: {target_id}</b></p>
+                                    </div>
+                                """, unsafe_allow_html=True)
+                else:
+                    st.subheader("Final Generated SQL")
+                    try:
+                        final_sql = compiler.compile()
+                        st.code(final_sql, language="sql")
+                    except Exception as e:
+                        st.error(f"Compilation Error: {e}")
