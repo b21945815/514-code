@@ -20,35 +20,54 @@ Construct a structured JSON object based on the definitions below:
 
 DATA STRUCTURE DEFINITIONS:
 
-1. **ValueNode**: Represents data units or logic blocks.
+1. **ValueNode**: The atomic unit of data
    - LITERAL:    {{ "type": "LITERAL", "value": 100 or "2023-01-01" }}
-   - SEMANTIC:   {{ "type": "SEMANTIC", "value": "rich districts", "column": "district", "table": "districts" }}
-   - COLUMN:     {{ "type": "COLUMN", "value": "SUM(t.amount)" }}
    - COLUMN:     {{ "type": "COLUMN", "value": "t.amount" }}
-   - SUBQUERY:   {{ "type": "SUBQUERY", "value": "@sub1" }}
-   - EXPRESSION: {{ "type": "EXPRESSION", "value": "CASE WHEN t.amount > 0 THEN 1 ELSE 0 END" or "SUM(t.amount)" }} 
-     (Use EXPRESSION for Math, Functions, and CASE logic)
+   - FUNCTION:   {{ "type": "FUNCTION", "name": "SUM", "params": [ValueNode, ...] }}
+   - CASE:       {{ "type": "CASE", "cases": [ {{ "when": ValueNode, "then": ValueNode }} ], "else": ValueNode }}
+   - CONDITION:  {{ "type": "CONDITION", "value": ConditionNode }} 
+     (Use CONDITION type for Math, Boolean Logic etc. inside values)
+   - SEMANTIC:   {{ "type": "SEMANTIC", "value": "rich", "column": "desc", "table": "dist" }}
+   - SUBQUERY:   {{ "type": "SUBQUERY", "target_task_id": "2" }}
+    (Note: 'target_task_id' is the ID of the other task to be combined with the current task via valueNode)
 
-2. **SelectNode**: Items in the "target" list.
-   - {{ "value": ValueNode, "alias": "column_alias" }} 
-
-3. **OrderNode**: Items in the "order_by" list.
-   - {{ "value": ValueNode, "direction": "ASC" | "DESC" }}
-
-4. **ConditionNode**: Recursive logic for "where_clause" and "having_clause".
+2. **ConditionNode**: Logic tree. Used in "where_clause", "having_clause", "join_condition" or inside ValueNodes.
    - LEAF:   {{ "left": ValueNode, "operator": "=", "right": ValueNode }}
    - BRANCH: {{ "logic": "AND" | "OR" || "IFNULL" || "IFF" etc., "conditions": [ConditionNode, ConditionNode] }}
 
-5. **LogicNode**: Elements inside "structural_logic".
-   - JOIN:   {{ "type": "INNER JOIN", "table": "account as a", "condition": ConditionNode }}
-   - SET_OP: {{ "type": "UNION" | "INTERSECT", "target_task_id": 2 }}
+3. **StructuralLogic**: Items in the "structural_logic" list.
+   - JOIN:       {{ "type": "INNER JOIN", "table": "table as b", "condition": ConditionNode }}
+   - SET_OP:     {{ "type": "UNION" | "INTERSECT", "target_task_id": 3 }}
+   (Note: 'target_task_id' is the ID of the other task to be combined with the current task via Set Operation)
 
-RULES:
-1 - Use SEMANTIC type for ValueNode instead of LITERAL when the table column is semantic (Not a number and not a date)
-2 - If you can not generate valid output for a given query set is_achievable to false and explain the reason in error 
-3 - Intent Analysis: Distinguish between 'Entity Definition' and 'Entity Activity' If the query implies an activity, prioritize activity tables over entity tables.
-4 - Semantic Alignment: Ensure the selected table's description semantically supports the specific action verbs used in the query
-OUTPUT FORMAT EXAMPLE 
+4. **SelectNode**: Items in the "target" list.
+   - {{ "value": ValueNode, "alias": "column_alias" }} 
+
+5. **OrderNode**: Items in the "order_by" list.
+   - {{ "value": ValueNode, "direction": "ASC" | "DESC" }}
+
+--- TASK SCHEMA EXPLANATION ---
+Each task object represents a single SQL query unit.
+- **task_id**: Unique integer ID.
+- **main_table**: The primary table in FROM clause (e.g., "orders as o").
+- **is_achievable**: Boolean, false if query cannot be answered with schema.
+- **target**: List of SelectNodes (The columns to return).
+- **use_distinct**: Boolean, true if 'SELECT DISTINCT' is needed.
+- **structural_logic**: List of JOINs or SET OPERATIONS.
+- **where_clause**: ConditionNode for filtering.
+- **group_by**: List of strings (column names) for aggregation.
+- **having_clause**: ConditionNode for filtering aggregates.
+- **limit_by**: Integer, for LIMIT clause
+- **tasks**: array of task objects
+
+--- RULES ---
+1. **Semantic Values**: Use SEMANTIC type for string/categorical filters where exact DB value is unknown (e.g. "rich", "female").
+2. **Aggregates**: Use FUNCTION type for aggregates. Example: SUM(amount) -> {{ "type": "FUNCTION", "name": "SUM", "params": [...] }}
+3. **Intent Analysis**: If the query implies an activity (trading, moving money), prioritize activity tables over entity tables.
+4. **Semantic Alignment**: Ensure the selected table's description semantically supports the specific action verbs used in the query.
+5. **Checking output**: After decomposition check to query to see if your sql logic is correct for asked query. Fix if you found errors
+
+OUTPUT FORMAT EXAMPLE :
 {{
   "tasks": [
     {{
@@ -57,6 +76,7 @@ OUTPUT FORMAT EXAMPLE
       "error": null,
       "limit_by": 10,
       "main_table": "orders as o",
+      "is_distinct": true,
       "structural_logic": [
         {{ 
            "type": "INNER JOIN", 
@@ -67,26 +87,33 @@ OUTPUT FORMAT EXAMPLE
       "where_clause": {{
          "logic": "AND",
          "conditions": [
-            {{ "left": {{ "type": "COLUMN", "value": "u.userType" }}, "operator": "IN", "right": {{ "type": "SEMANTIC", "value": "premium account", "table": "users", "column": "userType" }},
-            {{ "left": {{ "type": "COLUMN", "value": "o.total_amount" }}, "operator": ">", "right": {{ "type": "SUBQUERY", "value": "@avg_order" }} }}
+            {{ "left": {{ "type": "SUBQUERY", "target_task_id": 2 }}, "operator": "IN", "right": {{ "type": "SEMANTIC", "value": "premium", "table": "users", "column": "type" }} }}
          ]
       }},
-        "target": {{
-            "targets"[
-                {{ "value": {{ "type": "COLUMN", "value": "u.username" }}, "alias": "user" }},
-                {{ "value": {{ "type": "EXPRESSION", "value": "CASE WHEN SUM(o.total_amount) > 5000 THEN 'VIP' ELSE 'Regular' END" }}, "alias": "status" }}
-            ]
-        "use_distinct": true
-      }},
+      "target": [
+         {{ "value": {{ "type": "COLUMN", "value": "u.username" }}, "alias": "user" }},
+         {{
+            "alias": "status",
+            "value": {{
+               "type": "CASE",
+               "cases": [
+                  {{ 
+                     "when": {{ "left": {{ "type": "COLUMN", "value": "o.amount" }}, "operator": ">", "right": {{ "type": "LITERAL", "value": 1000 }} }},
+                     "then": {{ "type": "LITERAL", "value": "VIP" }}
+                  }}
+               ],
+               "else": {{ "type": "LITERAL", "value": "Regular" }}
+            }}
+         }}
+      ],
       "group_by": ["u.username"],
       "having_clause": {{
-         "logic": "AND",
-         "conditions": [
-             {{ "left": {{ "type": "EXPRESSION", "value": "COUNT(o.id)" }}, "operator": ">", "right": {{ "type": "LITERAL", "value": 5 }} }}
-         ]
+          "left": {{ "type": "FUNCTION", "name": "COUNT", "params": [{{ "type": "COLUMN", "value": "o.id" }}] }}, 
+          "operator": ">", 
+          "right": {{ "type": "LITERAL", "value": 5 }} 
       }},
       "order_by": [
-         {{ "value": {{ "type": "EXPRESSION", "value": "status" }}, "direction": "DESC" }}
+         {{ "value": {{ "type": "COLUMN", "value": "taxed_amount" }}, "direction": "DESC" }}
       ],
       "subqueries": {{
          "@avg_order": {{
@@ -94,6 +121,16 @@ OUTPUT FORMAT EXAMPLE
              "target": [ {{ "value": {{ "type": "EXPRESSION", "value": "AVG(total_amount)" }}, "alias": null }} ]
          }}
       }}
+    }},
+    {{
+      "task_id": 2,
+      "main_table": "orders",
+      "target": [
+         {{ 
+            "value": {{ "type": "FUNCTION", "name": "AVG", "params": [{{ "type": "COLUMN", "value": "total_amount" }}] }}, 
+            "alias": null 
+         }}
+      ]
     }}
   ]
 }}

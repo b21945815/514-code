@@ -32,10 +32,12 @@ class JSONToSQLCompiler:
             for logic in task.get('structural_logic', []):
                 if 'target_task_id' in logic:
                     referenced_ids.add(logic['target_task_id'])
-
+            self._collect_subquery_ids(task, referenced_ids)
         # The roots are the IDs that are present in 'all_ids' but not in 'referenced_ids'
+        print(referenced_ids)
         candidates = list(all_ids - referenced_ids)
-
+        print(all_ids)
+        print(candidates)
         if not candidates:
             # Circular dependency or weird edge case; fallback to the last task defined
             # Error case
@@ -44,6 +46,17 @@ class JSONToSQLCompiler:
         # If multiple candidates exist (rare), usually the one with the highest ID 
         # is the aggregator in sequential generation, or we simply pick the first.
         return max(candidates)
+
+    def _collect_subquery_ids(self, obj, refs):
+        """Helper to recursively find 'task_id' inside SUBQUERY nodes."""
+        if isinstance(obj, dict):
+            if obj.get('type') == 'SUBQUERY' and 'target_task_id' in obj:
+                refs.add(obj['target_task_id'])
+            for v in obj.values():
+                self._collect_subquery_ids(v, refs)
+        elif isinstance(obj, list):
+            for item in obj:
+                self._collect_subquery_ids(item, refs)
 
     def _compile_task(self, task_id):
         """
@@ -121,20 +134,16 @@ class JSONToSQLCompiler:
         
         return base_sql
 
-    def _build_select(self, target_node, current_task):
+    def _build_select(self, target_list, current_task):
         """Builds the SELECT clause."""
         columns = []
-        use_distinct = False
+        # 'is_distinct' is now a property of the Task, not the target dict
+        use_distinct = current_task.get('is_distinct', False)
 
-        if isinstance(target_node, dict):
-            items = target_node.get('targets', [])
-            use_distinct = target_node.get('use_distinct', False)
-        elif isinstance(target_node, list):
-            items = target_node
-        else:
-            items = []
+        if not target_list: 
+            return "SELECT *"
 
-        for item in items:
+        for item in target_list:
             val_sql = self._parse_value_node(item['value'], current_task)
             alias = item.get('alias')
             if alias:
@@ -190,50 +199,71 @@ class JSONToSQLCompiler:
             return f"({f' {logic_op} '.join(sub_conditions)})"
         
         else:
-            left = self._parse_value_node(node['left'], current_task, operator)
             operator = node['operator']
+            left = self._parse_value_node(node['left'], current_task, operator)
             right = self._parse_value_node(node['right'], current_task, operator)
 
             # Is the right value a list (semantic search result)
             right_str = str(right).strip().upper()
             is_list_format = "," in str(right) and str(right).strip().startswith("(")
-            is_not_subquery = not right_str.startswith("SELECT")
-            
-            if is_list_format and is_not_subquery:
+            is_subquery = right_str.startswith("(SELECT") or right_str.startswith("SELECT")
+            if is_list_format and is_subquery:
                 if operator == "=":
                     operator = "IN"
                 elif operator in ["!=", "<>"]:
                     operator = "NOT IN"
-            return f"{left} {operator} {right}"
+            return f"({left} {operator} {right})"
 
-    def _parse_value_node(self, node, current_task, operator = ""):
-        """Parses values based on type (LITERAL, COLUMN, SUBQUERY, SEMANTIC)."""
-        v_type = node['type']
-        value = node['value']
+    def _parse_value_node(self, node, current_task, parent_operator=""):
+        """Parses atomic values."""
+        if not node: return "NULL"
+        
+        v_type = node.get('type')
+        value = node.get('value')
 
         if v_type == 'LITERAL':
-            if isinstance(value, str):
-                return f"'{value}'"
-            return str(value)
+            return f"'{value}'" if isinstance(value, str) else str(value)
         
         elif v_type == 'COLUMN':
             return value
         
-        elif v_type == 'EXPRESSION':
-            return value
-        
+        elif v_type == 'FUNCTION':
+            func_name = node.get('name', '').upper()
+            # Recursive: params are ValueNodes
+            params = [self._parse_value_node(p, current_task) for p in node.get('params', [])]
+            
+            if func_name == "COUNT" and not params:
+                return "COUNT(*)"
+            return f"{func_name}({', '.join(params)})"
+
+        elif v_type == 'CASE':
+            cases = []
+            # Cases are ConditionNodes (WHEN) and ValueNodes (THEN)
+            for c in node.get('cases', []):
+                cond = self._parse_condition_node(c['when'], current_task)
+                then_val = self._parse_value_node(c['then'], current_task)
+                cases.append(f"WHEN {cond} THEN {then_val}")
+            
+            else_part = ""
+            if 'else' in node:
+                else_val = self._parse_value_node(node['else'], current_task)
+                else_part = f" ELSE {else_val}"
+            
+            return f"CASE {' '.join(cases)}{else_part} END"
+
+        elif v_type == 'CONDITION':
+            # Value behaves like a boolean/math operation (e.g., amount * 0.2)
+            # Delegate to condition parser
+            return self._parse_condition_node(value, current_task)
+
         elif v_type == 'SEMANTIC':
-            return self._mock_semantic_search(value, node['table'], node['column'], operator)
+            # Pass operator to decide on Scalar vs List return
+            return self._mock_semantic_search(value, node.get('table'), node.get('column'), parent_operator)
         
         elif v_type == 'SUBQUERY':
-            sub_id = value
-            sub_task_def = current_task.get('subqueries', {}).get(sub_id)
-            
-            if sub_task_def:
-                temp_compiler = JSONToSQLCompiler({'tasks': [{'task_id': 'temp', **sub_task_def}]})
-                return f"({temp_compiler._compile_task('temp')})"
-            
-            return "NULL"
+            # Reference to another task via ID (replaces SUBQUERY)
+            ref_task_id = node.get('target_task_id')
+            return f"({self._compile_task(ref_task_id)})"
 
         return "NULL"
 
@@ -273,14 +303,15 @@ if __name__ == "__main__":
         "Name the account numbers of female clients who are oldest and have lowest average salary?", # moderate
         "List out the accounts who have the earliest trading date in 1995 ?", # simple
         "For the branch which located in the south Bohemia with biggest number of inhabitants, what is the percentage of the male clients?" # challenging
+        "Name the account numbers of female clients who are oldest and have lowest average salary?" # moderate
     ]
 
     for i, query in enumerate(test_queries, 1):
         print(f"QUERY {i}: {query}")
         
         # Step 1: Decompose
-        json_result = decomposer.decompose_query("financial", query)
-        
+        json_result =  decomposer.decompose_query("financial", query)
+
         tasks = json_result.get("tasks", [])
         if not tasks:
             print("[INFO] No tasks returned.")
