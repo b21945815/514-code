@@ -190,12 +190,23 @@ class JSONToSQLCompiler:
             return f"({f' {logic_op} '.join(sub_conditions)})"
         
         else:
-            left = self._parse_value_node(node['left'], current_task)
+            left = self._parse_value_node(node['left'], current_task, operator)
             operator = node['operator']
-            right = self._parse_value_node(node['right'], current_task)
+            right = self._parse_value_node(node['right'], current_task, operator)
+
+            # Is the right value a list (semantic search result)
+            right_str = str(right).strip().upper()
+            is_list_format = "," in str(right) and str(right).strip().startswith("(")
+            is_not_subquery = not right_str.startswith("SELECT")
+            
+            if is_list_format and is_not_subquery:
+                if operator == "=":
+                    operator = "IN"
+                elif operator in ["!=", "<>"]:
+                    operator = "NOT IN"
             return f"{left} {operator} {right}"
 
-    def _parse_value_node(self, node, current_task):
+    def _parse_value_node(self, node, current_task, operator = ""):
         """Parses values based on type (LITERAL, COLUMN, SUBQUERY, SEMANTIC)."""
         v_type = node['type']
         value = node['value']
@@ -212,7 +223,7 @@ class JSONToSQLCompiler:
             return value
         
         elif v_type == 'SEMANTIC':
-            return self._mock_semantic_search(value, node['table'], node['column'])
+            return self._mock_semantic_search(value, node['table'], node['column'], operator)
         
         elif v_type == 'SUBQUERY':
             sub_id = value
@@ -226,9 +237,12 @@ class JSONToSQLCompiler:
 
         return "NULL"
 
-    def _mock_semantic_search(self, search_term, table, column):        
+    def _mock_semantic_search(self, search_term, table, column, operator):        
         """Simulates Vector DB retrieval."""
         term = str(search_term).lower()
+        op = str(operator).upper().strip()
+        set_compatible_ops = ["IN", "NOT IN", "=", "!=", "<>"]
+        force_single_value = op not in set_compatible_ops
         if "premium" in term:
             return "('Premium', 'VIP', 'Gold')"
         elif "rich" in term:
