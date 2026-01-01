@@ -284,12 +284,12 @@ class JSONToSQLCompiler:
         return f"'{search_term}'"
 
 if __name__ == "__main__":
-    if not os.path.exists('database_info.json'):
+    if not os.path.exists('info/database_info.json'):
         print("[ERROR] database_info.json not found.")
         exit()
 
     try:
-        decomposer = QueryDecomposer(info_path='database_info.json')
+        decomposer = QueryDecomposer(info_path='info/database_info.json')
     except Exception as e:
         print(f"[ERROR] Initialization failed: {e}")
         exit()

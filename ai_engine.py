@@ -136,7 +136,7 @@ OUTPUT FORMAT EXAMPLE :
 }}
 """
 
-    def __init__(self, info_path='database_info.json'):
+    def __init__(self, info_path='info/database_info.json'):
         self.api_key = os.getenv("GROQ_API_KEY")
         if not self.api_key:
             raise ValueError("GROQ_API_KEY not found in environment variables.")

@@ -8,7 +8,7 @@ st.set_page_config(page_title="BirdSQL Execution Plan", layout="wide")
 @st.cache_resource
 def init_models():
     tokenizer, model = load_router("./my_router_model")
-    decomposer = QueryDecomposer("database_info.json")
+    decomposer = QueryDecomposer("info/database_info.json")
     return tokenizer, model, decomposer
 
 tokenizer, model, decomposer = init_models()
