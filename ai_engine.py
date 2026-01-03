@@ -65,7 +65,7 @@ Each task object represents a single SQL query unit.
 2. **Aggregates**: Use FUNCTION type for aggregates. Example: SUM(amount) -> {{ "type": "FUNCTION", "name": "SUM", "params": [...] }}
 3. **Intent Analysis**: If the query implies an activity (trading, moving money), prioritize activity tables over entity tables.
 4. **Semantic Alignment**: Ensure the selected table's description semantically supports the specific action verbs used in the query.
-5. **Checking output**: After decomposition check to query to see if your sql logic is correct for asked query. Fix if you found errors
+5. **Checking output**: After decomposition check to query to see if your sql logic is correct for asked query and also check if it is can work on SQLLite server. Fix if you found errors
 
 OUTPUT FORMAT EXAMPLE :
 {{
@@ -172,7 +172,8 @@ OUTPUT FORMAT EXAMPLE :
             )
             
             content = response.choices[0].message.content.strip()
-            return json.loads(content)
+            total_token = response.usage.total_tokens
+            return json.loads(content), total_token
         
         except Exception as e:
             return {"tasks": [{"is_achievable": False, "error": str(e)}]}

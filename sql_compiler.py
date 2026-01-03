@@ -34,10 +34,8 @@ class JSONToSQLCompiler:
                     referenced_ids.add(logic['target_task_id'])
             self._collect_subquery_ids(task, referenced_ids)
         # The roots are the IDs that are present in 'all_ids' but not in 'referenced_ids'
-        print(referenced_ids)
         candidates = list(all_ids - referenced_ids)
-        print(all_ids)
-        print(candidates)
+
         if not candidates:
             # Circular dependency or weird edge case; fallback to the last task defined
             # Error case
@@ -310,7 +308,7 @@ if __name__ == "__main__":
         print(f"QUERY {i}: {query}")
         
         # Step 1: Decompose
-        json_result =  decomposer.decompose_query("financial", query)
+        json_result, total_tokens =  decomposer.decompose_query("financial", query)
 
         tasks = json_result.get("tasks", [])
         if not tasks:

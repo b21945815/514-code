@@ -36,8 +36,16 @@ if user_input:
             """)
     else:
         with st.spinner("Generating Logical Execution Plan..."):
-            response = decomposer.decompose_query(selected_db, user_input)
+            response, total_tokens = decomposer.decompose_query(selected_db, user_input)
             tasks = response.get("tasks", [])
+            
+            st.divider()
+            col_info1, col_info2 = st.columns([3, 1])
+            with col_info1:
+                st.success(f"**Analysis Complete:** SQL Intent Detected ({score*100:.1f}%)")
+            with col_info2:
+                st.metric(label="LLM Tokens Used", value=total_tokens, help="Total input+output tokens consumed by the Decomposer LLM")
+            st.divider()
 
             if not tasks:
                 st.warning("Decomposer returned no tasks for this query.")
@@ -73,6 +81,6 @@ if user_input:
                     st.subheader("Final Generated SQL")
                     try:
                         final_sql = compiler.compile()
-                        st.code(final_sql, language="sql")
+                        st.code(final_sql, language="sql")                     
                     except Exception as e:
                         st.error(f"Compilation Error: {e}")

@@ -1,0 +1,122 @@
+{
+    "summary": {
+        "total": 1,
+        "success": 0,
+        "strict_match": 0,
+        "soft_match": 0,
+        "super_soft_match": 0,
+        "wrong": 1,
+        "errors": 0,
+        "router_filtered": 0
+    },
+    "details": [
+        {
+            "query": "How many accounts who choose issuance after transaction are staying in East Bohemia region?",
+            "ground_truth_sql": "SELECT COUNT(T2.account_id) FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id WHERE T1.A3 = 'east Bohemia' AND T2.frequency = 'POPLATEK PO OBRATU'",
+            "status": "completed",
+            "steps": {
+                "router": {
+                    "status": "success",
+                    "intent": "DATABASE QUERY",
+                    "confidence": 0.9955606460571289
+                },
+                "decomposer": {
+                    "status": "success",
+                    "tokens": 3585,
+                    "json_plan": {
+                        "tasks": [
+                            {
+                                "task_id": 1,
+                                "is_achievable": true,
+                                "error": null,
+                                "limit_by": null,
+                                "main_table": "account as a",
+                                "is_distinct": false,
+                                "structural_logic": [
+                                    {
+                                        "type": "INNER JOIN",
+                                        "table": "district as d",
+                                        "condition": {
+                                            "left": {
+                                                "type": "COLUMN",
+                                                "value": "a.district_id"
+                                            },
+                                            "operator": "=",
+                                            "right": {
+                                                "type": "COLUMN",
+                                                "value": "d.district_id"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "where_clause": {
+                                    "logic": "AND",
+                                    "conditions": [
+                                        {
+                                            "left": {
+                                                "type": "COLUMN",
+                                                "value": "a.frequency"
+                                            },
+                                            "operator": "=",
+                                            "right": {
+                                                "type": "SEMANTIC",
+                                                "value": "issuance after transaction",
+                                                "table": "account",
+                                                "column": "frequency"
+                                            }
+                                        },
+                                        {
+                                            "left": {
+                                                "type": "COLUMN",
+                                                "value": "d.A3"
+                                            },
+                                            "operator": "=",
+                                            "right": {
+                                                "type": "SEMANTIC",
+                                                "value": "East Bohemia",
+                                                "table": "district",
+                                                "column": "A3"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "target": [
+                                    {
+                                        "value": {
+                                            "type": "FUNCTION",
+                                            "name": "COUNT",
+                                            "params": [
+                                                {
+                                                    "type": "COLUMN",
+                                                    "value": "a.account_id"
+                                                }
+                                            ]
+                                        },
+                                        "alias": "account_count"
+                                    }
+                                ],
+                                "group_by": [],
+                                "having_clause": null,
+                                "order_by": []
+                            }
+                        ]
+                    }
+                },
+                "compiler": {
+                    "status": "success",
+                    "generated_sql": "SELECT COUNT(a.account_id) AS account_count\nFROM account as a\nINNER JOIN district as d ON (a.district_id = d.district_id)\nWHERE ((a.frequency = 'ISSUANCE_AFTER_TRANS') AND (d.A3 = 'East Bohemia'))"
+                },
+                "evaluator": {
+                    "status": "success",
+                    "match_type": "WRONG",
+                    "details": "Row ['13'] (as set) not found in prediction rows (subset check).",
+                    "execution_status": "SUCCESS"
+                }
+            },
+            "metrics": {
+                "total_time": 2.369990825653076,
+                "total_tokens": 3585
+            }
+        }
+    ]
+}

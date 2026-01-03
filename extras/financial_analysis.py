@@ -11,6 +11,10 @@ with open('data/dev_20240627/dev.json', 'r', encoding='utf-8') as f:
 
 with open('data/dev_20240627/dev_tables.json', 'r', encoding='utf-8') as f:
     tables_data = json.load(f)
+with open('data/dev_20240627/dev_tied_append.json', 'r', encoding='utf-8') as f:
+    tables_data2 = json.load(f)
+
+tables_data.extend(tables_data2)
 
 # 2. FILTER FOR 'FINANCIAL' DATABASE
 fin_queries = [q for q in dev_queries if q['db_id'] == 'financial']
