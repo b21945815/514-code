@@ -15,7 +15,6 @@ class JSONToSQLCompiler:
             return "-- No tasks found"
         
         root_task_id = self._find_root_task()
-
         return self._compile_task(root_task_id)
 
     def _find_root_task(self):
@@ -236,9 +235,8 @@ class JSONToSQLCompiler:
 
         elif v_type == 'CASE':
             cases = []
-            # Cases are ConditionNodes (WHEN) and ValueNodes (THEN)
             for c in node.get('cases', []):
-                cond = self._parse_condition_node(c['when'], current_task)
+                cond = self._parse_value_node(c['when'], current_task)
                 then_val = self._parse_value_node(c['then'], current_task)
                 cases.append(f"WHEN {cond} THEN {then_val}")
             

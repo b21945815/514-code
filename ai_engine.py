@@ -98,7 +98,7 @@ OUTPUT FORMAT EXAMPLE :
                "type": "CASE",
                "cases": [
                   {{ 
-                     "when": {{ "left": {{ "type": "COLUMN", "value": "o.amount" }}, "operator": ">", "right": {{ "type": "LITERAL", "value": 1000 }} }},
+                     "when": {{ "type": "CONDITION", "value": {{"left": {{ "type": "COLUMN", "value": "o.amount" }}, "operator": ">", "right": {{ "type": "LITERAL", "value": 1000 }} }} }},
                      "then": {{ "type": "LITERAL", "value": "VIP" }}
                   }}
                ],
