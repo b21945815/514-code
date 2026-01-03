@@ -20,7 +20,7 @@ def main():
     parser.add_argument("--data_path", type=str, default="data/dev_20240627/dev.json")
     parser.add_argument("--data_path_2", type=str, default="data/dev_20240627/dev_tied_append.json")
     parser.add_argument("--limit", type=int, default=10)
-    parser.add_argument("--output", type=str, default="pipeline_test_report.json")
+    parser.add_argument("--output", type=str, default="results/pipeline_test_report.json")
     args = parser.parse_args()
 
     pipeline = BirdSQLPipeline()
