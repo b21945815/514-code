@@ -15,5 +15,5 @@ completion = client.chat.completions.create(
     ],
     temperature=0, 
 )
-
+print(completion.usage.total_tokens)
 print(completion.choices[0].message.content)
