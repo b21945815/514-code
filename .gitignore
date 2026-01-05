@@ -18,3 +18,5 @@ data/
 Thumbs.db
 
 *.log
+
+chroma_db/

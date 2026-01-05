@@ -58,11 +58,43 @@
     },
     "value_mappings": {
       "loan.status": {
-        "A": "finished, no problems",
-        "B": "finished, unpaid",
-        "C": "running, OK",
-        "D": "running, in debt"
+        "A": "A: contract finished, no problems",
+        "B": "B: contract finished, loan not paid",
+        "C": "C: running contract, OK so far",
+        "D": "D: running contract, client in debt"
+      },
+      "k_symbol": {
+        "POJISTNE": "insurance payment",
+        "SLUZBY": "payment for statement",
+        "UROK": "interest credited",
+        "SANKC. UROK": "sanction interest",
+        "SIPO": "household payment",
+        "DUCHOD": "old-age pension",
+        "UVER": "loan payment"
+      },
+      "gender": {
+        "F": "F: FEMALE",
+        "M": "M: MALE"
       }
-    }
+    },
+        "text_columns": [
+      "account.frequency",
+      "card.type",
+      "client.gender",
+      "disp.type",
+      "district.A2",
+      "district.A3",
+      "district.A4",
+      "district.A5",
+      "district.A6",
+      "district.A7",
+      "loan.status",
+      "order.bank_to",
+      "order.k_symbol",
+      "trans.type",
+      "trans.operation",
+      "trans.k_symbol",
+      "trans.bank"
+    ]
   }
 }

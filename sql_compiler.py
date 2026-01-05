@@ -1,11 +1,19 @@
 import os
+
+from altair import value
 from ai_engine import QueryDecomposer
+import chromadb
+from chromadb.utils import embedding_functions
 
 class JSONToSQLCompiler:
-    def __init__(self, json_data):
+    def __init__(self, json_data, vector_db_path="./chroma_db"):
         self.data = json_data
         # Map task_id to task object for easy lookup
         self.tasks = {t['task_id']: t for t in self.data.get('tasks', [])}
+        self.chroma_client = chromadb.PersistentClient(path=vector_db_path)
+        self.emb_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name="paraphrase-multilingual-MiniLM-L12-v2"
+        )
 
     def compile(self):
         """
@@ -254,8 +262,15 @@ class JSONToSQLCompiler:
 
         elif v_type == 'SEMANTIC':
             # Pass operator to decide on Scalar vs List return
-            return self._mock_semantic_search(value, node.get('table'), node.get('column'), parent_operator)
-        
+            print(f"Semantic Search for: Table={node.get('table')}, Column={node.get('column')}, Value={value}")
+            db_val, _ = self.semantic_search(node.get('table'), node.get('column'), value)
+            if db_val is None:
+                return f"'{value}'"   
+            return f"'{db_val}'" if isinstance(db_val, str) else str(db_val)
+            # return self._mock_semantic_search(value, node.get('table'), node.get('column'), parent_operator)
+
+
+
         elif v_type == 'SUBQUERY':
             # Reference to another task via ID (replaces SUBQUERY)
             ref_task_id = node.get('target_task_id')
@@ -263,6 +278,40 @@ class JSONToSQLCompiler:
 
         return "NULL"
 
+    def semantic_search(self, table, column, query_text, n_results=1):
+        """
+        Searches for the closest match in the specified table_column collection.
+        Returns: The actual DB value to use in SQL.
+        """
+        collection_name = f"{table}_{column}"
+        
+        try:
+            collection = self.chroma_client.get_collection(
+                name=collection_name,
+                embedding_function=self.emb_fn
+            )
+            
+            results = collection.query(
+                query_texts=[query_text],
+                n_results=n_results
+            )
+            
+            if not results['metadatas'][0]:
+                return None, 0.0
+            
+            # Extract best match
+            best_match_meta = results['metadatas'][0][0] # {'db_value': 'POJISTNE', 'original': 'insurance payment'}
+            distance = results['distances'][0][0] # Lower is better in Chroma (L2) usually, but check metric
+            
+            # Simple confidence score simulation (inverse of distance)
+            confidence = 1 / (1 + distance)
+            
+            return best_match_meta['db_value'], confidence
+
+        except Exception as e:
+            print(f"Vector Search Error ({collection_name}): {e}")
+            return None, 0.0
+        
     def _mock_semantic_search(self, search_term, table, column, operator):        
         """Simulates Vector DB retrieval."""
         term = str(search_term).lower()

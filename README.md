@@ -6,3 +6,8 @@ DATA
 
 make .env file
 set GROQ_API_KEY=key
+
+run router_model.py to train router model
+run vector_db_builder.py
+run app.py with streamlit
+
