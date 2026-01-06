@@ -60,7 +60,7 @@
       "trans.operation": "The method or mechanism used to execute the transaction (e.g., credit card, cash, bank transfer)",
       "trans.bank": "The code of the partner bank involved in the transaction"
     },
-    "text_columns": [
+    "semantic_search": [
       "account.frequency",
       "card.type",
       "client.gender",
