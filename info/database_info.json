@@ -59,6 +59,25 @@
       "trans.type": "Direction of the transaction flow indicating if it is a Credit or Withdrawal",
       "trans.operation": "The method or mechanism used to execute the transaction (e.g., credit card, cash, bank transfer)",
       "trans.bank": "The code of the partner bank involved in the transaction"
-    }
+    },
+    "semantic_search": [
+      "account.frequency",
+      "card.type",
+      "client.gender",
+      "disp.type",
+      "district.A2",
+      "district.A3",
+      "district.A4",
+      "district.A5",
+      "district.A6",
+      "district.A7",
+      "loan.status",
+      "order.bank_to",
+      "order.k_symbol",
+      "trans.type",
+      "trans.operation",
+      "trans.k_symbol",
+      "trans.bank"
+    ]
   }
 }
