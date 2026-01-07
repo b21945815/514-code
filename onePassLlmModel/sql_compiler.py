@@ -262,11 +262,10 @@ class JSONToSQLCompiler:
         elif v_type == 'SEMANTIC':
             # Pass operator to decide on Scalar vs List return
             print(f"Semantic Search for: Table={node.get('table')}, Column={node.get('column')}, Value={value}")
-            db_val, _ = self.semantic_search(node.get('table'), node.get('column'), value)
+            db_val, _ = self.semantic_search(node.get('table'), node.get('column'), value, parent_operator)
             if db_val is None:
                 return f"'{value}'"   
-            return f"'{db_val}'" if isinstance(db_val, str) else str(db_val)
-            # return self._mock_semantic_search(value, node.get('table'), node.get('column'), parent_operator)
+            return db_val
 
 
 
@@ -277,13 +276,14 @@ class JSONToSQLCompiler:
 
         return "NULL"
 
-    def semantic_search(self, table, column, query_text, n_results=1):
+    def semantic_search(self, table, column, query_text, parent_operator, n_results=1):
         """
         Searches for the closest match in the specified table_column collection.
         Returns: The actual DB value to use in SQL.
         """
         collection_name = f"{table}_{column}"
-        
+        set_compatible_ops = ["IN", "NOT IN"]
+        return_more_then_one = parent_operator in set_compatible_ops
         try:
             collection = self.chroma_client.get_collection(
                 name=collection_name,
@@ -298,15 +298,37 @@ class JSONToSQLCompiler:
             if not results['metadatas'][0]:
                 return None, 0.0
             
-            # Extract best match
-            best_match_meta = results['metadatas'][0][0] # {'db_value': 'POJISTNE', 'original': 'insurance payment'}
-            distance = results['distances'][0][0] # Lower is better in Chroma (L2) usually, but check metric
+            accepted_values = []
+            best_confidence = 0.0
             
-            # Simple confidence score simulation (inverse of distance)
-            confidence = 1 / (1 + distance)
-            
-            return best_match_meta['db_value'], confidence
 
+            num_candidates = len(results['metadatas'][0])
+
+            for i in range(num_candidates):
+                meta = results['metadatas'][0][i]
+                distance = results['distances'][0][i]
+                
+                confidence = 1 / (1 + distance)
+                
+                db_val = meta['db_value']
+
+                if i == 0:
+                    best_confidence = confidence
+                    accepted_values.append(db_val)
+                
+                elif return_more_then_one and confidence > 0.7:
+                    if db_val not in accepted_values:
+                        accepted_values.append(db_val)
+            if not accepted_values:
+                    return None, 0.0
+            formatted_list = []
+            for val in accepted_values:
+                if isinstance(val, str):
+                    formatted_list.append(f"'{val}'")
+                else:
+                    formatted_list.append(str(val))
+            final_sql_string = ", ".join(formatted_list)
+            return final_sql_string, best_confidence
         except Exception as e:
             print(f"Vector Search Error ({collection_name}): {e}")
             return None, 0.0

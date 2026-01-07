@@ -46,18 +46,18 @@
       "district.A16":  "no. of committed crimes on 1996",
       "order.k_symbol": "characterization of the payment, purpose of the payment",
       "trans.k_symbol": "characterization of the transaction",
-      "account.frequency": "frequency of the account for payment (monthly issuance, issuance after transaction etc.)",
+      "account.frequency": "frequency of the account for payment (semantically means monthly issuance, issuance after transaction etc.)",
       "disp.type": "type of disposition, OWNER, USER, DISPONENT etc.",
       "loan.duration": "Loan duration in months",
       "loan.payments": "Monthly installment amount associated with the loan",
-      "loan.status": "Status of the loan repayment (Finished OK, Finished Unpaid, Running OK, Running Debt)",
+      "loan.status": "Status of the loan repayment (semantically means Finished OK, Finished Unpaid, Running OK, Running Debt etc.)",
       "order.account_to": "The recipient's account number for the payment order",
       "order.bank_to": "The two-letter code identifying the recipient's bank",
       "order.amount": "The amount of money to be sent in the order",
       "account.date": "The date when the account was opened",
       "trans.date": "The date when the financial transaction occurred",
       "trans.type": "Direction of the transaction flow indicating if it is a Credit or Withdrawal",
-      "trans.operation": "The method or mechanism used to execute the transaction (e.g., credit card, cash, bank transfer)",
+      "trans.operation": "The method or mechanism used to execute the transaction (semantically means credit card, cash, bank transfer etc.)",
       "trans.bank": "The code of the partner bank involved in the transaction"
     }
   }
