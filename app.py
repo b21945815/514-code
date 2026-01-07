@@ -1,7 +1,7 @@
 import streamlit as st
-from router_model_helper import load_router, predict_intent
-from ai_engine import QueryDecomposer
-from sql_compiler import JSONToSQLCompiler
+from onePassLlmModel.router_model_helper import load_router, predict_intent
+from onePassLlmModel.ai_engine import QueryDecomposer
+from onePassLlmModel.sql_compiler import JSONToSQLCompiler
 
 st.set_page_config(page_title="BirdSQL Execution Plan", layout="wide")
 

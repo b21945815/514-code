@@ -1,8 +1,12 @@
+import sys
+import os
+ 
+sys.path.append(os.getcwd())
 import time
-from router_model_helper import load_router, predict_intent
-from ai_engine import QueryDecomposer
-from sql_compiler import JSONToSQLCompiler
-from bird_evaluator import BirdEvaluator
+from onePassLlmModel.router_model_helper import load_router, predict_intent
+from onePassLlmModel.ai_engine import QueryDecomposer
+from onePassLlmModel.sql_compiler import JSONToSQLCompiler
+from bird_evaluator import BirdEvaluator 
 
 class BirdSQLPipeline:
     def __init__(self, 

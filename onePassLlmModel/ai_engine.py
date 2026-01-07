@@ -12,7 +12,7 @@ class QueryDecomposer:
     
     DECOMPOSITION_PROMPT_TEMPLATE = """
 You are a SQLLite Decomposition Expert that uses reason. When decomposition check to query to see if your output really returning the asked data with correct filters.
-
+Your answers should correct for SQLLite.
 You are strictly faithful to this database schema:
 {db_metadata}
 
@@ -61,7 +61,7 @@ Each task object represents a single SQL query unit.
 - **tasks**: array of task objects
 
 --- RULES ---
-1. **Semantic Values**: Use SEMANTIC type for the fields in semantic_search field from the database schema.
+1. **Semantic Values**: use SEMANTIC type for string/categorical filters where exact DB value is unknown (e.g. "rich", "female") and the field has text value.
 2. **Aggregates**: Use FUNCTION type for aggregates. Example: SUM(amount) -> {{ "type": "FUNCTION", "name": "SUM", "params": [...] }}
 3. **Intent Analysis**: If the query implies an activity (trading, moving money), prioritize activity tables over entity tables.
 4. **Semantic Alignment**: Ensure the selected table's description semantically supports the specific action verbs used in the query.

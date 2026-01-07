@@ -1,7 +1,6 @@
 import os
 
-from altair import value
-from ai_engine import QueryDecomposer
+from onePassLlmModel.ai_engine import QueryDecomposer
 import chromadb
 from chromadb.utils import embedding_functions
 

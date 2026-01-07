@@ -2,7 +2,7 @@ import json
 import os
 import argparse
 from tqdm import tqdm
-from bird_pipeline import BirdSQLPipeline
+from onePassLlmModel.bird_pipeline import BirdSQLPipeline
 
 def load_test_data(filepath):
     if not os.path.exists(filepath):
