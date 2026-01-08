@@ -5,7 +5,6 @@ __pycache__/
 *.pyc
 
 my_router_model/
-results/
 *.pt
 *.bin
 *.safetensors
