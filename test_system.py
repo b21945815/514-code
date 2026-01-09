@@ -95,7 +95,7 @@ def main():
         return
     # If you are writing to file that has data for the first line new line for the first new line will probably be missing
     with open(args.output, 'a', encoding='utf-8', buffering=1) as f:
-        for item in tqdm(test_data_to_process, desc="Processing Queries"):            
+        for item in tqdm(test_data_to_process, desc="Processing Queries"):          
             query = item['question']
             gt_sql = item['SQL']
             args.hint = True
