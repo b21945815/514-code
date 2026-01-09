@@ -1,5 +1,7 @@
+import sys
 import os
-
+ 
+sys.path.append(os.getcwd())
 from onePassLlmModel.ai_engine import QueryDecomposer
 import chromadb
 from chromadb.utils import embedding_functions
@@ -23,6 +25,21 @@ class JSONToSQLCompiler:
         
         root_task_id = self._find_root_task()
         return self._compile_task(root_task_id)
+    
+    def _quote_table_string(self, table_str):
+        if not table_str:
+            return table_str
+            
+        parts = table_str.strip().split()
+        real_name = parts[0]
+        
+        if not real_name.startswith('"'):
+            real_name = f'"{real_name}"'
+
+        if len(parts) > 1:
+            return f"{real_name} {' '.join(parts[1:])}"
+        
+        return real_name
 
     def _find_root_task(self):
         """
@@ -35,10 +52,7 @@ class JSONToSQLCompiler:
 
         for task in self.tasks.values():
             # Check structural_logic for references to other tasks (Set Operations)
-            for logic in task.get('structural_logic', []):
-                if 'target_task_id' in logic:
-                    referenced_ids.add(logic['target_task_id'])
-            self._collect_subquery_ids(task, referenced_ids)
+            self._collect_references_recursive(task, referenced_ids)
         # The roots are the IDs that are present in 'all_ids' but not in 'referenced_ids'
         candidates = list(all_ids - referenced_ids)
 
@@ -51,22 +65,28 @@ class JSONToSQLCompiler:
         # is the aggregator in sequential generation, or we simply pick the first.
         return max(candidates)
 
-    def _collect_subquery_ids(self, obj, refs):
-        """Helper to recursively find 'task_id' inside SUBQUERY nodes."""
-        if isinstance(obj, dict):
-            if obj.get('type') == 'SUBQUERY' and 'target_task_id' in obj:
-                refs.add(obj['target_task_id'])
-            for v in obj.values():
-                self._collect_subquery_ids(v, refs)
-        elif isinstance(obj, list):
-            for item in obj:
-                self._collect_subquery_ids(item, refs)
+    def _collect_references_recursive(self, node, referenced_ids):
+        if isinstance(node, dict):
+            if 'target_task_id' in node:
+                val = node['target_task_id']
+                if val is not None:
+                    try:
+                        referenced_ids.add(int(val))
+                    except (ValueError, TypeError):
+                        pass
+
+            for value in node.values():
+                self._collect_references_recursive(value, referenced_ids)
+
+        elif isinstance(node, list):
+            for item in node:
+                self._collect_references_recursive(item, referenced_ids)
 
     def _compile_task(self, task_id):
         """
         Recursively compiles a specific task into SQL.
         """
-        task = self.tasks.get(task_id)
+        task = self.tasks.get(int(task_id))
         if not task:
             return f"-- Error: Task {task_id} not found"
 
@@ -86,7 +106,7 @@ class JSONToSQLCompiler:
         select_clause = self._build_select(task.get('target', []), task)
 
         # 2. FROM
-        from_clause = f"FROM {task['main_table']}"
+        from_clause = f"FROM {self._quote_table_string(task['main_table'])}"
 
         # 3. JOINs
         join_clause = self._build_joins(joins, task)
@@ -166,6 +186,7 @@ class JSONToSQLCompiler:
 
         for logic in join_logic_list:
             table = logic['table']
+            table = self._quote_table_string(table)
             condition = self._parse_condition_node(logic['condition'], current_task)
             joins.append(f"{logic['type']} {table} ON {condition}")
         
@@ -226,7 +247,20 @@ class JSONToSQLCompiler:
         value = node.get('value')
 
         if v_type == 'LITERAL':
-            return f"'{value}'" if isinstance(value, str) else str(value)
+            if value is None:
+                return "NULL"
+            if isinstance(value, (list, tuple)):
+                formatted_items = []
+                for item in value:
+                    if item is None:
+                        formatted_items.append("NULL")
+                    elif isinstance(item, str):
+                        formatted_items.append(f"'{item}'")
+                    else:
+                        formatted_items.append(str(item))
+                return f"({', '.join(formatted_items)})"
+            else:
+                return f"'{value}'" if isinstance(value, str) else str(value)
         
         elif v_type == 'COLUMN':
             return value
@@ -394,3 +428,5 @@ if __name__ == "__main__":
         print("GENERATED SQL:")
         print(sql_output)
         print("-" * 50)
+
+        

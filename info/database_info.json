@@ -27,7 +27,8 @@
       "order": "Registry of permanent payment orders (standing instructions) associated with accounts for recurring payments, specifying the recipient bank, account, and amount."
     },
     "extra_informations": [
-      "For this database districts also means location of branch"
+      "For this database districts also means location of branch",
+      "Only OWNER eligible for loan"
     ],
     "column_descriptions": {
       "district.A2": "District / Branch Name",

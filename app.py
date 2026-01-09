@@ -36,7 +36,7 @@ if user_input:
             """)
     else:
         with st.spinner("Generating Logical Execution Plan..."):
-            response, total_tokens = decomposer.decompose_query(selected_db, user_input)
+            response, total_tokens = decomposer.decompose_query(selected_db, user_input, None)
             tasks = response.get("tasks", [])
             
             st.divider()

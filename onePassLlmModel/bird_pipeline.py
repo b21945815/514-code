@@ -27,7 +27,7 @@ class BirdSQLPipeline:
         print("Evaluator Ready")
 
 
-    def process_query(self, user_query, db_id="financial", ground_truth_sql=None):
+    def process_query(self, user_query, db_id="financial", ground_truth_sql=None, hint=None):
         start_time = time.time()
         
         result = {
@@ -59,7 +59,7 @@ class BirdSQLPipeline:
         step_decomposer = {"status": "pending", "tokens": 0, "json_plan": None}
         if self.decomposer:
             try:
-                json_response, tokens = self.decomposer.decompose_query(db_id, user_query)
+                json_response, tokens = self.decomposer.decompose_query(db_id, user_query, hint)
                 step_decomposer["tokens"] = tokens
                 step_decomposer["json_plan"] = json_response
                 result["metrics"]["total_tokens"] += tokens
@@ -73,6 +73,8 @@ class BirdSQLPipeline:
                 else:
                     step_decomposer["status"] = "success"
             except Exception as e:
+                print("here")
+                print(e)
                 step_decomposer["status"] = "error"
                 step_decomposer["error"] = str(e)
         
