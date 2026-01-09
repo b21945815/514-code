@@ -2,7 +2,7 @@ import sys
 import os
  
 sys.path.append(os.getcwd())
-from onePassLlmModel.ai_engine import QueryDecomposer
+from onePassLlmModel.gpt_ai_engine import GptQueryDecomposer
 import chromadb
 from chromadb.utils import embedding_functions
 
@@ -104,9 +104,13 @@ class JSONToSQLCompiler:
         
         # 1. SELECT (Target)
         select_clause = self._build_select(task.get('target', []), task)
-
         # 2. FROM
-        from_clause = f"FROM {self._quote_table_string(task['main_table'])}"
+        main_table = task.get('main_table')
+
+        if main_table:
+            from_clause = f"FROM {self._quote_table_string(main_table)}"
+        else:
+            from_clause = " "
 
         # 3. JOINs
         join_clause = self._build_joins(joins, task)
@@ -242,10 +246,8 @@ class JSONToSQLCompiler:
     def _parse_value_node(self, node, current_task, parent_operator=""):
         """Parses atomic values."""
         if not node: return "NULL"
-        
         v_type = node.get('type')
         value = node.get('value')
-
         if v_type == 'LITERAL':
             if value is None:
                 return "NULL"
@@ -273,7 +275,11 @@ class JSONToSQLCompiler:
             func_name = node.get('name', '').upper()
             # Recursive: params are ValueNodes
             params = [self._parse_value_node(p, current_task) for p in node.get('params', [])]
-            
+            if func_name == "CAST" and len(params) == 2:
+                expression = params[0]
+                type_name = params[1]
+                type_name = type_name.replace("'", "").replace('"', "")
+                return f"CAST({expression} AS {type_name})"
             if func_name == "COUNT" and not params:
                 return "COUNT(*)"
             return f"{func_name}({', '.join(params)})"
@@ -302,7 +308,7 @@ class JSONToSQLCompiler:
             # print(f"Semantic Search for: Table={node.get('table')}, Column={node.get('column')}, Value={value}")
             db_val, _ = self.semantic_search(node.get('table'), node.get('column'), value, parent_operator)
             if db_val is None:
-                return f"'{value}'"   
+                return f"'{value}'"  
             return db_val
 
 
@@ -368,7 +374,7 @@ class JSONToSQLCompiler:
             final_sql_string = ", ".join(formatted_list)
             return final_sql_string, best_confidence
         except Exception as e:
-            print(f"Vector Search Error ({collection_name}): {e}")
+            print(f"Vector Search Error ({collection_name}) ({query_text}): {e}")
             return None, 0.0
         
     def _mock_semantic_search(self, search_term, table, column, operator):        
@@ -393,7 +399,7 @@ if __name__ == "__main__":
         exit()
 
     try:
-        decomposer = QueryDecomposer(info_path='info/database_info.json')
+        decomposer = GptQueryDecomposer(info_path='info/database_info.json')
     except Exception as e:
         print(f"[ERROR] Initialization failed: {e}")
         exit()

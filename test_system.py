@@ -3,7 +3,6 @@ import os
 import argparse
 from tqdm import tqdm
 from onePassLlmModel.bird_pipeline import BirdSQLPipeline
-import time
 def load_test_data(filepath):
     if not os.path.exists(filepath):
         return []
@@ -50,11 +49,11 @@ def main():
     parser.add_argument("--data_path", type=str, default="data/dev_20240627/dev.json")
     parser.add_argument("--data_path_2", type=str, default="data/dev_20240627/dev_tied_append.json")
     parser.add_argument("--limit", type=int, default=200)
-    parser.add_argument("--output", type=str, default="results/pipeline_test_report111.jsonl")
+    parser.add_argument("--output", type=str, default="results/pipeline_test_report_gpt.jsonl")
     parser.add_argument("--hint", type=bool, default=False)
     args = parser.parse_args()
 
-    pipeline = BirdSQLPipeline()
+    pipeline = BirdSQLPipeline(model="gpt")
 
     test_data = load_test_data(args.data_path)
     test_data_2 = load_test_data(args.data_path_2)
@@ -65,7 +64,6 @@ def main():
     
     if args.limit > 0:
         test_data = test_data[:args.limit]
-
     stats = {
         "total": 0,
         "success": 0,
@@ -77,7 +75,7 @@ def main():
         "errors": 0,
         "router_filtered": 0
     }
-    
+    print(len(test_data))
     processed_count = 0
     if os.path.exists(args.output):
         with open(args.output, 'r', encoding='utf-8') as f:

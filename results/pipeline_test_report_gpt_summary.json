@@ -1,0 +1,11 @@
+{
+    "total": 108,
+    "success": 62,
+    "exact_match": 49,
+    "strict_match": 2,
+    "soft_match": 0,
+    "super_soft_match": 11,
+    "wrong": 37,
+    "errors": 9,
+    "router_filtered": 0
+}

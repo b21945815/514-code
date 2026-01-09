@@ -40,7 +40,7 @@ class VectorSearcher:
             return best_match_meta['db_value'], confidence
 
         except Exception as e:
-            print(f"Vector Search Error ({collection_name}): {e}")
+            print(f"Vector Search Error ({collection_name}) ({query_text}): {e}")
             return None, 0.0
 
 # --- Test ---

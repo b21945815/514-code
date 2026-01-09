@@ -4,12 +4,14 @@ import os
 sys.path.append(os.getcwd())
 import time
 from onePassLlmModel.router_model_helper import load_router, predict_intent
-from onePassLlmModel.ai_engine import QueryDecomposer
+from onePassLlmModel.groq_ai_engine import GroqQueryDecomposer
+from onePassLlmModel.gpt_ai_engine import GptQueryDecomposer
 from onePassLlmModel.sql_compiler import JSONToSQLCompiler
 from bird_evaluator import BirdEvaluator 
 
 class BirdSQLPipeline:
     def __init__(self, 
+                 model="groq",
                  router_path="./my_router_model", 
                  db_info_path="info/database_info.json", 
                  db_path="financial.sqlite",
@@ -19,8 +21,11 @@ class BirdSQLPipeline:
         
         self.router_tokenizer, self.router_model = load_router(router_path)
         print("Router Model Loaded")
-
-        self.decomposer = QueryDecomposer(info_path=db_info_path)
+        if model == "gpt":
+            print("asking to gpt")
+            self.decomposer = GptQueryDecomposer(info_path=db_info_path)
+        else: 
+            self.decomposer = GroqQueryDecomposer(info_path=db_info_path)
         print("Decomposer Engine Loaded")
 
         self.evaluator = BirdEvaluator(db_filename=db_path)
@@ -73,8 +78,6 @@ class BirdSQLPipeline:
                 else:
                     step_decomposer["status"] = "success"
             except Exception as e:
-                print("here")
-                print(e)
                 step_decomposer["status"] = "error"
                 step_decomposer["error"] = str(e)
         

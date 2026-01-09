@@ -1,6 +1,6 @@
 import streamlit as st
 from onePassLlmModel.router_model_helper import load_router, predict_intent
-from onePassLlmModel.ai_engine import QueryDecomposer
+from onePassLlmModel.groq_ai_engine import GroqQueryDecomposer
 from onePassLlmModel.sql_compiler import JSONToSQLCompiler
 
 st.set_page_config(page_title="BirdSQL Execution Plan", layout="wide")
@@ -8,7 +8,7 @@ st.set_page_config(page_title="BirdSQL Execution Plan", layout="wide")
 @st.cache_resource
 def init_models():
     tokenizer, model = load_router("./my_router_model")
-    decomposer = QueryDecomposer("info/database_info.json")
+    decomposer = GroqQueryDecomposer("info/database_info.json")
     return tokenizer, model, decomposer
 
 tokenizer, model, decomposer = init_models()
