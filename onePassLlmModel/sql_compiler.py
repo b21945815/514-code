@@ -295,7 +295,7 @@ class JSONToSQLCompiler:
 
         elif v_type == 'SEMANTIC':
             # Pass operator to decide on Scalar vs List return
-            print(f"Semantic Search for: Table={node.get('table')}, Column={node.get('column')}, Value={value}")
+            # print(f"Semantic Search for: Table={node.get('table')}, Column={node.get('column')}, Value={value}")
             db_val, _ = self.semantic_search(node.get('table'), node.get('column'), value, parent_operator)
             if db_val is None:
                 return f"'{value}'"   
