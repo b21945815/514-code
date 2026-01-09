@@ -49,11 +49,11 @@ def main():
     parser.add_argument("--data_path", type=str, default="data/dev_20240627/dev.json")
     parser.add_argument("--data_path_2", type=str, default="data/dev_20240627/dev_tied_append.json")
     parser.add_argument("--limit", type=int, default=200)
-    parser.add_argument("--output", type=str, default="results/pipeline_test_report_gpt.jsonl")
+    parser.add_argument("--output", type=str, default="results/pipeline_test_report_with_hint.jsonl")
     parser.add_argument("--hint", type=bool, default=False)
     args = parser.parse_args()
 
-    pipeline = BirdSQLPipeline(model="gpt")
+    pipeline = BirdSQLPipeline(model="groq")
 
     test_data = load_test_data(args.data_path)
     test_data_2 = load_test_data(args.data_path_2)
@@ -93,10 +93,12 @@ def main():
         test_data_to_process = test_data[processed_count:]
     else:
         return
+    # If you are writing to file that has data for the first line new line for the first new line will probably be missing
     with open(args.output, 'a', encoding='utf-8', buffering=1) as f:
         for item in tqdm(test_data_to_process, desc="Processing Queries"):            
             query = item['question']
             gt_sql = item['SQL']
+            args.hint = True
             if args.hint:
                 hint = item.get('evidence')
             else:

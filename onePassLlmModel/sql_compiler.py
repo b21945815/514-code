@@ -7,7 +7,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 
 class JSONToSQLCompiler:
-    def __init__(self, json_data, vector_db_path="./chroma_db"):
+    def __init__(self, json_data, vector_db_path="C:/Users/fatih/OneDrive/Masaüstü/514/514-code/chroma_db"):
         self.data = json_data
         # Map task_id to task object for easy lookup
         self.tasks = {t['task_id']: t for t in self.data.get('tasks', [])}

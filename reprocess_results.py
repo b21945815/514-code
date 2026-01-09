@@ -38,10 +38,10 @@ def update_stats(stats, res):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_file", type=str, default="results/pipeline_test_report_gpt.jsonl", help="Girdi dosyası (.jsonl)")
-    parser.add_argument("--output_file", type=str, default="results/pipeline_test_report_reprocessed_without_hint.jsonl", help="Çıktı dosyası (.jsonl)")
-    parser.add_argument("--stats_file", type=str, default="results/pipeline_test_stats_reprocessed_without_hint.json", help="İstatistik dosyası (.json)")
-    parser.add_argument("--db_path", type=str, default="financial.sqlite", help="Veritabanı dosyası yolu")
+    parser.add_argument("--input_file", type=str, default="results/pipeline_test_report_gpt.jsonl")
+    parser.add_argument("--output_file", type=str, default="results/pipeline_test_report_reprocessed_without_hint.jsonl")
+    parser.add_argument("--stats_file", type=str, default="results/pipeline_test_stats_reprocessed_without_hint.json")
+    parser.add_argument("--db_path", type=str, default="financial.sqlite")
     args = parser.parse_args()
 
     if not os.path.exists(args.input_file):
@@ -102,7 +102,6 @@ def main():
             try:
                 compiler = JSONToSQLCompiler(json_plan)
                 generated_sql = compiler.compile()
-                print(generated_sql)
                 step_compiler["generated_sql"] = generated_sql
                 
                 if generated_sql and generated_sql.strip().startswith("--"):
