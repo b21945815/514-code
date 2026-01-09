@@ -1,0 +1,1852 @@
+{
+    "summary": {
+        "total": 108,
+        "success": 52,
+        "exact_match": 40,
+        "strict_match": 1,
+        "soft_match": 0,
+        "super_soft_match": 11,
+        "wrong": 47,
+        "errors": 9,
+        "missing": 0,
+        "accuracy": 48.148148148148145
+    },
+    "details": [
+        {
+            "timestamp": "2026-01-09T12:06:18.629708",
+            "query_id": "89",
+            "nl_query": "How many accounts who choose issuance after transaction are staying in East Bohemia region?",
+            "sql_ground_truth": "SELECT COUNT(T2.account_id) FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id WHERE T1.A3 = 'east Bohemia' AND T2.frequency = 'POPLATEK PO OBRATU'",
+            "sql_predicted": "SELECT COUNT(a.account_id) FROM account a JOIN disp d ON a.account_id = d.account_id JOIN client c ON d.client_id = c.client_id JOIN district dis ON c.district_id = dis.district_id WHERE a.frequency = 'POPLATEK PO OBRATU' AND dis.A3 = 'East Bohemia'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['13'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:18.632700",
+            "query_id": "90",
+            "nl_query": "How many accounts who have region in Prague are eligible for loans?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM account AS T1 INNER JOIN loan AS T2 ON T1.account_id = T2.account_id INNER JOIN district AS T3 ON T1.district_id = T3.district_id WHERE T3.A3 = 'Prague'",
+            "sql_predicted": "SELECT COUNT(DISTINCT a.account_id) FROM account a JOIN district d ON a.district_id = d.district_id JOIN loan l ON a.account_id = l.account_id WHERE d.A3 = 'Prague'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:18.634708",
+            "query_id": "91",
+            "nl_query": "The average unemployment ratio of 1995 and 1996, which one has higher percentage?",
+            "sql_ground_truth": "SELECT DISTINCT IIF(AVG(A13) > AVG(A12), '1996', '1995') FROM district",
+            "sql_predicted": "SELECT CASE WHEN AVG(A12) > AVG(A13) THEN '1995 has a higher average unemployment rate' WHEN AVG(A12) < AVG(A13) THEN '1996 has a higher average unemployment rate' ELSE 'Both years have the same average unemployment rate' END AS result FROM district",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['1996'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:18.640710",
+            "query_id": "92",
+            "nl_query": "List out the no. of districts that have female average salary is more than 6000 but less than 10000?",
+            "sql_ground_truth": "SELECT COUNT(DISTINCT T2.district_id)  FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.gender = 'F' AND T2.A11 BETWEEN 6000 AND 10000",
+            "sql_predicted": "SELECT COUNT(DISTINCT d.district_id) AS num_districts FROM client c JOIN district d ON c.district_id = d.district_id WHERE c.gender = 'F' GROUP BY d.district_id HAVING AVG(d.A11) > 6000 AND AVG(d.A11) < 10000",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['69'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 69,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:18.644708",
+            "query_id": "93",
+            "nl_query": "How many male customers who are living in North Bohemia have average salary greater than 8000?",
+            "sql_ground_truth": "SELECT COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.gender = 'M' AND T2.A3 = 'north Bohemia' AND T2.A11 > 8000",
+            "sql_predicted": "SELECT COUNT(DISTINCT C.client_id) FROM client AS C INNER JOIN district AS D ON C.district_id = D.district_id WHERE C.gender = 'M' AND D.A3 = 'North Bohemia' AND D.A11 > 8000",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['280'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:18.647707",
+            "query_id": "94",
+            "nl_query": "List out the account numbers of female clients who are oldest and has lowest average salary, calculate the gap between this lowest average salary with the highest average salary?",
+            "sql_ground_truth": "SELECT T1.account_id , ( SELECT MAX(A11) - MIN(A11) FROM district ) FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN disp AS T3 ON T1.account_id = T3.account_id INNER JOIN client AS T4 ON T3.client_id = T4.client_id WHERE T2.district_id = ( SELECT district_id FROM client WHERE gender = 'F' ORDER BY birth_date ASC LIMIT 1 ) ORDER BY T2.A11 DESC LIMIT 1",
+            "sql_predicted": "SELECT c.client_id, c.birth_date, d.A11 AS average_salary FROM client c JOIN district d ON c.district_id = d.district_id WHERE c.gender = 'F' ORDER BY c.birth_date ASC LIMIT 1 ), SalaryStats AS ( SELECT MIN(A11) AS min_average_salary, MAX(A11) AS max_average_salary FROM district ) SELECT a.account_id, (ss.max_average_salary - ss.min_average_salary) AS salary_gap FROM disp d",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 2,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:18.653705",
+            "query_id": "95",
+            "nl_query": "List out the account numbers of clients who are youngest and have highest average salary?",
+            "sql_ground_truth": "SELECT T1.account_id  FROM account AS T1 INNER JOIN disp AS T2 ON T1.account_id = T2.account_id INNER JOIN client AS T3 ON T2.client_id = T3.client_id INNER JOIN district AS T4 on T4.district_id = T1.district_id WHERE T2.client_id = ( SELECT client_id FROM client ORDER BY birth_date DESC LIMIT 1) GROUP BY T4.A11, T1.account_id",
+            "sql_predicted": "SELECT a.account_id FROM account a JOIN disp d ON a.account_id = d.account_id JOIN client c ON d.client_id = c.client_id JOIN district dist ON c.district_id = dist.district_id WHERE c.birth_date = (SELECT MAX(c2.birth_date) FROM client c2) AND dist.A11 = (SELECT MAX(dist2.A11) FROM district dist2)",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 1, Got 0",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:18.658221",
+            "query_id": "96",
+            "nl_query": "How many customers who choose statement of weekly issuance are Owner?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM account AS T1 INNER JOIN disp AS T2 ON T1.account_id = T2.account_id WHERE T2.type = 'OWNER' AND T1.frequency = 'POPLATEK TYDNE'",
+            "sql_predicted": "SELECT COUNT(DISTINCT C.client_id) FROM client AS C INNER JOIN disp AS D ON C.client_id = D.client_id INNER JOIN account AS A ON D.account_id = A.account_id WHERE A.frequency = 'POPLATEK TYDNE' AND D.type = 'Owner'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['240'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:20.066847",
+            "query_id": "97",
+            "nl_query": "List out the id number of client who choose statement of issuance after transaction are Disponent?",
+            "sql_ground_truth": "SELECT T2.client_id FROM account AS T1 INNER JOIN disp AS T2 ON T1.account_id = T2.account_id WHERE T1.frequency = 'POPLATEK PO OBRATU' AND T2.type = 'DISPONENT'",
+            "sql_predicted": "SELECT DISTINCT c.client_id FROM client AS c INNER JOIN disp AS d ON c.client_id = d.client_id INNER JOIN account AS a ON d.account_id = a.account_id INNER JOIN trans AS t ON a.account_id = t.account_id WHERE d.type = 'DISPONENT' AND t.k_symbol = 'POPLATEK PO OBRATU'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 14, Got 0",
+            "result_summary": {
+                "gt_rows": 14,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:20.071853",
+            "query_id": "98",
+            "nl_query": "Among the accounts who have approved loan date in 1997, list out the accounts that have the lowest approved amount and choose weekly issuance statement.",
+            "sql_ground_truth": "SELECT T2.account_id FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id WHERE STRFTIME('%Y', T1.date) = '1997' AND T2.frequency = 'POPLATEK TYDNE' ORDER BY T1.amount LIMIT 1",
+            "sql_predicted": "SELECT a.account_id FROM loan l INNER JOIN account a ON l.account_id = a.account_id WHERE l.status = 'approved' AND STRFTIME('%Y', l.date) = '1997' AND a.frequency = 'POPLATEK TYDNE' ORDER BY l.amount ASC LIMIT 1",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 1, Got 0",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:20.075852",
+            "query_id": "99",
+            "nl_query": "Among the accounts who have loan validity more than 12 months, list out the accounts that have the highest approved amount and have account opening date in 1993.",
+            "sql_ground_truth": "SELECT T1.account_id FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id WHERE STRFTIME('%Y', T2.date) = '1993' AND T1.duration > 12 ORDER BY T1.amount DESC LIMIT 1",
+            "sql_predicted": "SELECT A.account_id FROM account AS A JOIN loan AS L ON A.account_id = L.account_id WHERE L.duration > 12 AND STRFTIME('%Y', A.date) = '1993' AND L.status = 'approved' ORDER BY L.amount DESC LIMIT 1",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 1, Got 0",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:20.081848",
+            "query_id": "100",
+            "nl_query": "Among the account opened, how many female customers who were born before 1950 and stayed in Sokolov?",
+            "sql_ground_truth": "SELECT COUNT(T2.client_id) FROM district AS T1 INNER JOIN client AS T2 ON T1.district_id = T2.district_id WHERE T2.gender = 'F' AND STRFTIME('%Y', T2.birth_date) < '1950' AND T1.A2 = 'Sokolov'",
+            "sql_predicted": "SELECT COUNT(DISTINCT c.client_id) FROM client AS c INNER JOIN disp AS d ON c.client_id = d.client_id INNER JOIN account AS a ON d.account_id = a.account_id INNER JOIN district AS dist ON c.district_id = dist.district_id WHERE c.gender = 'F' AND c.birth_date < '1950-01-01' AND dist.A2 = 'Sokolov'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:21.010803",
+            "query_id": "101",
+            "nl_query": "List out the accounts who have the earliest trading date in 1995 ?",
+            "sql_ground_truth": "SELECT account_id FROM trans WHERE STRFTIME('%Y', date) = '1995' ORDER BY date ASC LIMIT 1",
+            "sql_predicted": "SELECT account_id FROM trans WHERE date = ( SELECT MIN(date) FROM trans WHERE date BETWEEN '1995-01-01' AND '1995-12-31' )",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Rows",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 359,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:21.693078",
+            "query_id": "102",
+            "nl_query": "State different accounts who have account opening date before 1997 and own an amount of money greater than 3000USD",
+            "sql_ground_truth": "SELECT DISTINCT T2.account_id FROM trans AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id WHERE STRFTIME('%Y', T2.date) < '1997' AND T1.amount > 3000",
+            "sql_predicted": "SELECT DISTINCT a.account_id FROM account a JOIN trans t ON a.account_id = t.account_id WHERE a.date < '1997-01-01' AND t.balance > 3000",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Rows",
+            "result_summary": {
+                "gt_rows": 3591,
+                "pred_rows": 3602,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:22.079254",
+            "query_id": "103",
+            "nl_query": "Which client issued his/her card in 1994/3/3, give his/her client id.",
+            "sql_ground_truth": "SELECT T2.client_id FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN card AS T3 ON T2.disp_id = T3.disp_id WHERE T3.issued = '1994-03-03'",
+            "sql_predicted": "SELECT T3.client_id FROM card AS T1 INNER JOIN disp AS T2 ON T1.disp_id = T2.disp_id INNER JOIN client AS T3 ON T2.client_id = T3.client_id WHERE T1.issued = '1994-03-03'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:22.305728",
+            "query_id": "104",
+            "nl_query": "The transaction of 840 USD happened in 1998/10/14, when was this account opened?",
+            "sql_ground_truth": "SELECT T1.date FROM account AS T1 INNER JOIN trans AS T2 ON T1.account_id = T2.account_id WHERE T2.amount = 840 AND T2.date = '1998-10-14'",
+            "sql_predicted": "SELECT a.date AS account_opened_date FROM trans AS t INNER JOIN account AS a ON t.account_id = a.account_id WHERE t.amount = 840 AND t.date = '1998-10-14'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:22.308647",
+            "query_id": "105",
+            "nl_query": "There was a loan approved in 1994/8/25, where was that account opened, give the district Id of the branch.",
+            "sql_ground_truth": "SELECT T1.district_id FROM account AS T1 INNER JOIN loan AS T2 ON T1.account_id = T2.account_id WHERE T2.date = '1994-08-25'",
+            "sql_predicted": "SELECT D.district_id FROM loan L INNER JOIN account A ON L.account_id = A.account_id INNER JOIN district D ON A.district_id = D.district_id WHERE L.date = '1994-08-25' AND L.status = 'approved'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 1, Got 0",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:24.078043",
+            "query_id": "106",
+            "nl_query": "What is the biggest amount of transaction that the client whose card was opened in 1996/10/21 made?",
+            "sql_ground_truth": "SELECT T4.amount FROM card AS T1 JOIN disp AS T2 ON T1.disp_id = T2.disp_id JOIN account AS T3 on T2.account_id = T3.account_id JOIN trans AS T4 on T3.account_id = T4.account_id WHERE T1.issued = '1996-10-21' ORDER BY T4.amount DESC LIMIT 1",
+            "sql_predicted": "SELECT MAX(T3.amount) AS max_transaction_amount FROM card AS T1 INNER JOIN disp AS T2 ON T1.disp_id = T2.disp_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id WHERE T1.issued = '1996-10-21'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:24.081440",
+            "query_id": "107",
+            "nl_query": "What is the gender of the oldest client who opened his/her account in the highest average salary branch?",
+            "sql_ground_truth": "SELECT T2.gender FROM district AS T1 INNER JOIN client AS T2 ON T1.district_id = T2.district_id ORDER BY T1.A11 DESC, T2.birth_date ASC LIMIT 1",
+            "sql_predicted": "SELECT c.gender FROM client c JOIN disp d ON c.client_id = d.client_id JOIN account a ON d.account_id = a.account_id WHERE a.district_id = ( SELECT district_id FROM district ORDER BY A11 DESC LIMIT",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:26.396908",
+            "query_id": "108",
+            "nl_query": "For the client who applied the biggest loan, what was his/her first amount of transaction after opened the account?",
+            "sql_ground_truth": "SELECT T3.amount FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id ORDER BY T1.amount DESC, T3.date ASC LIMIT 1",
+            "sql_predicted": "SELECT T3.amount FROM trans AS T3 INNER JOIN account AS T1 ON T3.account_id = T1.account_id INNER JOIN disp AS T4 ON T1.account_id = T4.account_id INNER JOIN client AS T5 ON T4.client_id = T5.client_id WHERE T1.account_id = ( SELECT T1.account_id FROM loan AS T1 ORDER BY T1.amount DESC LIMIT 1 ) ORDER BY T3.date ASC LIMIT 1",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:26.402912",
+            "query_id": "109",
+            "nl_query": "How many clients opened their accounts in Jesenik branch were women?",
+            "sql_ground_truth": "SELECT COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.gender = 'F' AND T2.A2 = 'Jesenik'",
+            "sql_predicted": "SELECT COUNT(DISTINCT C.client_id) FROM client AS C INNER JOIN disp AS D ON C.client_id = D.client_id INNER JOIN account AS A ON D.account_id = A.account_id INNER JOIN district AS DI ON A.district_id = DI.district_id WHERE C.gender = 'F' AND DI.A2 = 'Jesenik'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['26'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:26.687036",
+            "query_id": "110",
+            "nl_query": "What is the disposition id of the client who made 5100 USD transaction in 1998/9/2?",
+            "sql_ground_truth": "SELECT T1.disp_id FROM disp AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id WHERE T3.date='1997-08-20' AND T3.amount = 5100",
+            "sql_predicted": "SELECT D.disp_id FROM trans AS T INNER JOIN account AS A ON T.account_id = A.account_id INNER JOIN disp AS D ON A.account_id = D.account_id WHERE T.amount = 5100 AND T.date = '1998-09-02'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['2231'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 4,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:26.694952",
+            "query_id": "111",
+            "nl_query": "How many accounts were opened in Litomerice in 1996?",
+            "sql_ground_truth": "SELECT COUNT(T2.account_id) FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id WHERE STRFTIME('%Y', T2.date) = '1996' AND T1.A2 = 'Litomerice'",
+            "sql_predicted": "SELECT COUNT(a.account_id) FROM account AS a INNER JOIN district AS d ON a.district_id = d.district_id WHERE d.A2 = 'Litomerice' AND STRFTIME('%Y', a.date) = '1996'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:26.698952",
+            "query_id": "112",
+            "nl_query": "For the female client who was born in 1976/1/29, which district did she opened her account?",
+            "sql_ground_truth": "SELECT T1.A2 FROM district AS T1 INNER JOIN client AS T2 ON T1.district_id = T2.district_id WHERE T2.birth_date = '1976-01-29' AND T2.gender = 'F'",
+            "sql_predicted": "SELECT D.A2 AS district_name FROM client C INNER JOIN disp DP ON C.client_id = DP.client_id INNER JOIN account A ON DP.account_id = A.account_id INNER JOIN district D ON A.district_id = D.district_id WHERE C.gender = 'F' AND C.birth_date = '1976-01-29'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:26.703953",
+            "query_id": "113",
+            "nl_query": "For the client who applied 98832 USD loan in 1996/1/3, when was his/her birthday?",
+            "sql_ground_truth": "SELECT T4.birth_date FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN disp AS T3 ON T2.account_id = T3.account_id INNER JOIN client AS T4 ON T3.client_id = T4.client_id WHERE T1.date = '1996-01-03' AND T1.amount = 98832",
+            "sql_predicted": "SELECT c.birth_date FROM loan l INNER JOIN account a ON l.account_id = a.account_id INNER JOIN disp d ON a.account_id = d.account_id INNER JOIN client c ON d.client_id = c.client_id WHERE l.amount = 98832 AND l.date = '1996-01-03'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:26.709952",
+            "query_id": "114",
+            "nl_query": "For the first client who opened his/her account in Prague, what is his/her account ID?",
+            "sql_ground_truth": "SELECT T1.account_id FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T2.A3 = 'Prague' ORDER BY T1.date ASC LIMIT 1",
+            "sql_predicted": "SELECT a.account_id FROM client AS c INNER JOIN disp AS d ON c.client_id = d.client_id INNER JOIN account AS a ON d.account_id = a.account_id INNER JOIN district AS dist ON c.district_id = dist.district_id WHERE dist.A3 = 'Prague' ORDER BY a.date ASC LIMIT 1",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['1539'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:26.714955",
+            "query_id": "115",
+            "nl_query": "For the branch which located in the south Bohemia with biggest number of inhabitants, what is the percentage of the male clients?",
+            "sql_ground_truth": "SELECT CAST(SUM(T1.gender = 'M') AS REAL) * 100 / COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T2.A3 = 'south Bohemia' GROUP BY T2.A4 ORDER BY T2.A4 DESC LIMIT 1",
+            "sql_predicted": "SELECT CAST(SUM(CASE WHEN C.gender = 'M' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(*) AS male_percentage FROM client C JOIN district D ON C.district_id = D.district_id WHERE D.A3 = 'South Bohemia' AND D.A4 = ( SELECT MAX(A4) FROM district WHERE A3 = 'South Bohemia' )",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['44.26229508196721'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:27.858041",
+            "query_id": "116",
+            "nl_query": "For the client whose loan was approved first in 1993/7/5, what is the increase rate of his/her account balance from 1993/3/22 to 1998/12/27?",
+            "sql_ground_truth": "SELECT CAST((SUM(IIF(T3.date = '1998-12-27', T3.balance, 0)) - SUM(IIF(T3.date = '1993-03-22', T3.balance, 0))) AS REAL) * 100 / SUM(IIF(T3.date = '1993-03-22', T3.balance, 0)) FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN trans AS T3 ON T3.account_id = T2.account_id WHERE T1.date = '1993-07-05'",
+            "sql_predicted": "SELECT disp.client_id, disp.account_id FROM loan INNER JOIN disp ON loan.account_id = disp.account_id WHERE loan.date",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['430.45454545454544'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 827,
+                "gt_cols": 1,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:27.861044",
+            "query_id": "117",
+            "nl_query": "What is the percentage of loan amount that has been fully paid with no issue.",
+            "sql_ground_truth": "SELECT (CAST(SUM(CASE WHEN status = 'A' THEN amount ELSE 0 END) AS REAL) * 100) / SUM(amount) FROM loan",
+            "sql_predicted": "SELECT CAST(SUM(CASE WHEN status = 'A' THEN amount ELSE 0 END) AS REAL) * 100 / SUM(amount) AS percentage_fully_paid FROM loan",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:27.862044",
+            "query_id": "118",
+            "nl_query": "For loan amount less than USD100,000, what is the percentage of accounts that is still running with no issue.",
+            "sql_ground_truth": "SELECT CAST(SUM(status = 'C') AS REAL) * 100 / COUNT(account_id) FROM loan WHERE amount < 100000",
+            "sql_predicted": "SELECT CAST(SUM(CASE WHEN L.amount < 100000 AND L.status = 'C' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(*) AS percentage FROM loan AS L",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['46.885245901639344'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.006418",
+            "query_id": "119",
+            "nl_query": "For accounts in 1993 with statement issued after transaction, list the account ID, district name and district region.",
+            "sql_ground_truth": "SELECT T1.account_id, T2.A2, T2.A3 FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.frequency = 'POPLATEK PO OBRATU' AND STRFTIME('%Y', T1.date)= '1993'",
+            "sql_predicted": "SELECT T1.account_id, T5.A2 AS district_name, T5.A3 AS district_region FROM account AS T1 INNER JOIN disp AS T2 ON T1.account_id = T2.account_id INNER JOIN client AS T3 ON T2.client_id = T3.client_id INNER JOIN district AS T5 ON T1.district_id = T5.district_id INNER JOIN trans AS T4 ON T1.account_id = T4.account_id WHERE STRFTIME('%Y', T1.date) = '1993' AND T4.k_symbol = 'POPLATEK PO OBRATU'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 21, Got 0",
+            "result_summary": {
+                "gt_rows": 21,
+                "pred_rows": 0,
+                "gt_cols": 3,
+                "pred_cols": 3
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.015422",
+            "query_id": "120",
+            "nl_query": "From Year 1995 to 2000, who are the accounts holders from 'east Bohemia'. State the account ID the frequency of statement issuance.",
+            "sql_ground_truth": "SELECT T1.account_id, T1.frequency FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T2.A3 = 'east Bohemia' AND STRFTIME('%Y', T1.date) BETWEEN '1995' AND '2000'",
+            "sql_predicted": "SELECT a.account_id, a.frequency, c.client_id FROM account AS a INNER JOIN disp AS d ON a.account_id = d.account_id INNER JOIN client AS c ON d.client_id = c.client_id INNER JOIN district AS dist ON c.district_id = dist.district_id WHERE dist.A2 = 'east Bohemia'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 364, Got 0",
+            "result_summary": {
+                "gt_rows": 364,
+                "pred_rows": 0,
+                "gt_cols": 2,
+                "pred_cols": 3
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.020421",
+            "query_id": "121",
+            "nl_query": "List account ID and account opening date for accounts from 'Prachatice'.",
+            "sql_ground_truth": "SELECT T1.account_id, T1.date FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T2.A2 = 'Prachatice'",
+            "sql_predicted": "SELECT account.account_id, account.date FROM account INNER JOIN district ON account.district_id = district.district_id WHERE district.A2 = 'Prachatice'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 55,
+                "pred_rows": 55,
+                "gt_cols": 2,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.022422",
+            "query_id": "122",
+            "nl_query": "State the district and region for loan ID '4990'.",
+            "sql_ground_truth": "SELECT T2.A2, T2.A3 FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN loan AS T3 ON T1.account_id = T3.account_id WHERE T3.loan_id = 4990",
+            "sql_predicted": "SELECT D.A2 AS district, D.A3 AS region FROM loan L INNER JOIN account A ON L.account_id = A.account_id INNER JOIN district D ON A.district_id = D.district_id WHERE L.loan_id = 4990",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 2,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.025421",
+            "query_id": "123",
+            "nl_query": "Provide the account ID, district and region for loan amount greater than USD300,000.",
+            "sql_ground_truth": "SELECT T1.account_id, T2.A2, T2.A3 FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN loan AS T3 ON T1.account_id = T3.account_id WHERE T3.amount > 300000",
+            "sql_predicted": "SELECT L.account_id, D.A2 AS district_name, D.A3 AS region_name FROM loan AS L INNER JOIN account AS A ON L.account_id = A.account_id INNER JOIN district AS D ON A.district_id = D.district_id WHERE L.amount > 300000",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 82,
+                "pred_rows": 82,
+                "gt_cols": 3,
+                "pred_cols": 3
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.039193",
+            "query_id": "124",
+            "nl_query": "List the loan ID, district and average salary for loan with duration of 60 months.",
+            "sql_ground_truth": "SELECT T3.loan_id, T2.A2, T2.A11 FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN loan AS T3 ON T1.account_id = T3.account_id WHERE T3.duration = 60",
+            "sql_predicted": "SELECT L.loan_id, D.A3 AS region, D.A11 AS average_salary FROM loan AS L INNER JOIN account AS A ON L.account_id = A.account_id INNER JOIN district AS D ON A.district_id = D.district_id WHERE L.duration = 60",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['4967', 'strakonice', '8547'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 145,
+                "pred_rows": 145,
+                "gt_cols": 3,
+                "pred_cols": 3
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.042134",
+            "query_id": "125",
+            "nl_query": "For loans contracts which are still running where client are in debt, list the district of the and the state the percentage unemployment rate increment from year 1995 to 1996.",
+            "sql_ground_truth": "SELECT CAST((T3.A13 - T3.A12) AS REAL) * 100 / T3.A12 FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN district AS T3 ON T2.district_id = T3.district_id WHERE T1.status = 'D'",
+            "sql_predicted": "SELECT D.district_id, D.A2 AS district_name, ((D.A13 - D.A12) / D.A12) * 100 AS unemployment_rate_increment FROM loan L JOIN account A ON L.account_id = A.account_id JOIN disp DP ON A.account_id = DP.account_id JOIN client C ON DP.client_id = C.client_id JOIN district D ON C.district_id = D.district_id WHERE L",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 45,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.049211",
+            "query_id": "126",
+            "nl_query": "Calculate the percentage of account from 'Decin' district for all accounts are opened in 1993.",
+            "sql_ground_truth": "SELECT CAST(SUM(T1.A2 = 'Decin') AS REAL) * 100 / COUNT(account_id) FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id WHERE STRFTIME('%Y', T2.date) = '1993'",
+            "sql_predicted": "SELECT CAST(SUM(CASE WHEN d.A2 = 'Decin' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(*) AS percentage FROM account AS a INNER JOIN district AS d ON a.district_id = d.district_id WHERE STRFTIME('%Y', a.date) = '1993'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.069363",
+            "query_id": "127",
+            "nl_query": "List the account IDs with monthly issuance of statements.",
+            "sql_ground_truth": "SELECT account_id FROM account WHERE Frequency = 'POPLATEK MESICNE'",
+            "sql_predicted": "SELECT account_id FROM account WHERE frequency = 'POPLATEK MESICNE'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 4167,
+                "pred_rows": 4167,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.077447",
+            "query_id": "128",
+            "nl_query": "List the top nine districts, by descending order, from the highest to the lowest, the number of female account holders.",
+            "sql_ground_truth": "SELECT T2.A2, COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.gender = 'F' GROUP BY T2.district_id, T2.A2 ORDER BY COUNT(T1.client_id) DESC LIMIT 9",
+            "sql_predicted": "SELECT d.A2 AS district, COUNT(c.client_id) AS female_account_holders FROM client c JOIN disp dp ON c.client_id = dp.client_id JOIN account a ON dp.account_id = a.account_id JOIN district d ON c.district_id = d.district_id WHERE c.gender = 'F' GROUP BY d.A2 ORDER BY female_account_holders DESC LIMIT 9",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 9,
+                "pred_rows": 9,
+                "gt_cols": 2,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.403917",
+            "query_id": "129",
+            "nl_query": "Which are the top ten withdrawals (non-credit card) by district names for the month of January 1996?",
+            "sql_ground_truth": "SELECT DISTINCT T1.A2 FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id WHERE T3.type = 'VYDAJ' AND T3.date LIKE '1996-01%' ORDER BY A2 ASC LIMIT 10",
+            "sql_predicted": "SELECT D.A2 AS district_name, T.amount FROM trans T INNER JOIN account A ON T.account_id = A.account_id INNER JOIN district D ON A.district_id = D.district_id WHERE T.type = 'VYDAJ' AND T.date LIKE '1996-01%' ORDER BY T.amount DESC LIMIT 10",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['benesov'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 10,
+                "pred_rows": 10,
+                "gt_cols": 1,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.407910",
+            "query_id": "130",
+            "nl_query": "How many of the account holders in South Bohemia still do not own credit cards?",
+            "sql_ground_truth": "SELECT COUNT(T3.account_id) FROM district AS T1 INNER JOIN client AS T2 ON T1.district_id = T2.district_id INNER JOIN disp AS T3 ON T2.client_id = T3.client_id WHERE T1.A3 = 'south Bohemia' AND T3.type != 'OWNER'",
+            "sql_predicted": "SELECT COUNT(DISTINCT a.account_id) AS account_holders_without_cards FROM account AS a JOIN district AS d ON a.district_id = d.district_id JOIN disp AS dp ON a.account_id = dp.account_id LEFT JOIN card AS c ON dp.disp_id = c.disp_id WHERE d.A3 = 'South Bohemia' AND c.card_id IS NULL",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['74'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.410910",
+            "query_id": "131",
+            "nl_query": "Which district has highest active loan?",
+            "sql_ground_truth": "SELECT T2.A3 FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN loan AS T3 ON T1.account_id = T3.account_id WHERE T3.status IN ('C', 'D') GROUP BY T2.A3 ORDER BY SUM(T3.amount) DESC LIMIT 1",
+            "sql_predicted": "SELECT D.A3 AS district_name, COUNT(L.loan_id) AS active_loan_count FROM loan AS L INNER JOIN account AS A ON L.account_id = A.account_id INNER JOIN district AS D ON A.district_id = D.district_id WHERE L.status IN ('C', 'D') GROUP BY D.district_id ORDER BY active_loan_count DESC LIMIT 1",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['south moravia'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.420430",
+            "query_id": "132",
+            "nl_query": "What is the average loan amount by male borrowers?",
+            "sql_ground_truth": "SELECT AVG(T4.amount) FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN account AS T3 ON T2.account_id = T3.account_id INNER JOIN loan AS T4 ON T3.account_id = T4.account_id WHERE T1.gender = 'M'",
+            "sql_predicted": "SELECT AVG(L.amount) AS average_loan_amount FROM loan AS L INNER JOIN account AS A ON L.account_id = A.account_id INNER JOIN disp AS D ON A.account_id = D.account_id INNER JOIN client AS C ON D.client_id = C.client_id WHERE C.gender = 'M'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.422454",
+            "query_id": "133",
+            "nl_query": "In 1996, which districts have the highest unemployment rate? List their branch location and district name.",
+            "sql_ground_truth": "SELECT district_id, A2 FROM district ORDER BY A13 DESC LIMIT 1",
+            "sql_predicted": "SELECT A2 AS district_name, A3 AS branch_location FROM district ORDER BY A13 DESC LIMIT 1",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['39', 'most'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 2,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.428516",
+            "query_id": "134",
+            "nl_query": "In the branch where the largest number of crimes were committed in 1996, how many accounts were opened?",
+            "sql_ground_truth": "SELECT COUNT(T2.account_id) FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id GROUP BY T1.A16 ORDER BY T1.A16 DESC LIMIT 1",
+            "sql_predicted": "SELECT COUNT(a.account_id) AS num_accounts_opened FROM account a JOIN district d ON a.district_id = d.district_id WHERE d.A16 = ( SELECT MAX(A16) FROM district )",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.685078",
+            "query_id": "135",
+            "nl_query": "After making a credit card withdrawal, how many account/s with monthly issuance has a negative balance?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM trans AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id WHERE T1.balance < 0 AND T1.operation = 'VYBER KARTOU' AND T2.frequency = 'POPLATEK MESICNE'",
+            "sql_predicted": "SELECT COUNT(DISTINCT a.account_id) AS negative_balance_accounts FROM trans t JOIN account a ON t.account_id = a.account_id WHERE t.operation = 'VYBER KARTOU' AND a.frequency = 'POPLATEK MESICNE' AND t.balance < 0",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['6'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.688077",
+            "query_id": "136",
+            "nl_query": "Between 1/1/1995 and 12/31/1997, how many loans in the amount of at least 250,000 per account that chose monthly statement issuance were approved?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM account AS T1 INNER JOIN loan AS T2 ON T1.account_id = T2.account_id WHERE T2.date BETWEEN '1995-01-01' AND '1997-12-31' AND T1.frequency = 'POPLATEK MESICNE' AND T2.amount >= 250000",
+            "sql_predicted": "SELECT COUNT(DISTINCT L.loan_id) FROM loan AS L INNER JOIN account AS A ON L.account_id = A.account_id WHERE L.amount >= 250000 AND A.frequency = 'POPLATEK MESICNE' AND L.status = 'approved' AND L.date BETWEEN '1995-01-01' AND '1997-12-31'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['65'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.691079",
+            "query_id": "137",
+            "nl_query": "How many accounts have running contracts in Branch location 1?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN loan AS T3 ON T1.account_id = T3.account_id WHERE T1.district_id = 1 AND (T3.status = 'C' OR T3.status = 'D')",
+            "sql_predicted": "SELECT COUNT(DISTINCT a.account_id) FROM account a JOIN loan l ON a.account_id = l.account_id JOIN district d ON a.district_id = d.district_id WHERE (l.status = 'C' OR l.status = 'D')",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['47'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.696165",
+            "query_id": "138",
+            "nl_query": "In the branch where the second-highest number of crimes were committed in 1995 occurred, how many male clients are there?",
+            "sql_ground_truth": "SELECT COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.gender = 'M' AND T2.A15 = (SELECT T3.A15 FROM district AS T3 ORDER BY T3.A15 DESC LIMIT 1, 1)",
+            "sql_predicted": "SELECT COUNT(C.client_id) AS male_clients_count FROM district D JOIN client C ON D.district_id = C.district_id WHERE C.gender = 'M' AND D.A15 = ( SELECT DISTINCT A15 FROM district ORDER BY A15 DESC LIMIT 1 OFFSET 1 )",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.698155",
+            "query_id": "139",
+            "nl_query": "How many high-level credit cards have \"OWNER\" type of disposition?",
+            "sql_ground_truth": "SELECT COUNT(T1.card_id) FROM card AS T1 INNER JOIN disp AS T2 ON T1.disp_id = T2.disp_id WHERE T1.type = 'gold' AND T2.type = 'OWNER'",
+            "sql_predicted": "SELECT COUNT(DISTINCT C.card_id) FROM card AS C INNER JOIN disp AS D ON C.disp_id = D.disp_id WHERE C.type = 'gold' AND D.type = 'OWNER'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:28.703078",
+            "query_id": "140",
+            "nl_query": "How many accounts are there in the district of \"Pisek\"?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T2.A2 = 'Pisek'",
+            "sql_predicted": "SELECT COUNT(T1.account_id) FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T2.A2 = 'Pisek'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:29.339788",
+            "query_id": "141",
+            "nl_query": "Which districts have transactions greater than USS$10,000 in 1997?",
+            "sql_ground_truth": "SELECT T1.district_id FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN trans AS T3 ON T1.account_id = T3.account_id WHERE STRFTIME('%Y', T3.date) = '1997' GROUP BY T1.district_id HAVING SUM(T3.amount) > 10000",
+            "sql_predicted": "SELECT Select distinct districts** that meet these criteria. Here's the SQL query: ```sql SELECT DISTINCT d.A2 AS district_name FROM trans t INNER JOIN account a ON t.account_id = a.account_id INNER JOIN district d ON a.district_id = d.district_id WHERE t.amount > 10000 AND STRFTIME('%Y",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 77,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:29.510199",
+            "query_id": "142",
+            "nl_query": "Which accounts placed orders for household payment in Pisek?",
+            "sql_ground_truth": "SELECT DISTINCT T2.account_id FROM trans AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN district AS T3 ON T2.district_id = T3.district_id WHERE T1.k_symbol = 'SIPO' AND T3.A2 = 'Pisek'",
+            "sql_predicted": "SELECT o.account_id FROM `order` o JOIN account a ON o.account_id = a.account_id JOIN district d ON a.district_id = d.district_id WHERE o.k_symbol = 'SIPO' AND d.A2 = 'Pisek'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Rows",
+            "result_summary": {
+                "gt_rows": 32,
+                "pred_rows": 34,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:29.513201",
+            "query_id": "143",
+            "nl_query": "What are the accounts that have gold credit cards?",
+            "sql_ground_truth": "SELECT T2.account_id FROM disp AS T2  INNER JOIN card AS T1 ON T1.disp_id = T2.disp_id  WHERE T1.type = 'gold'",
+            "sql_predicted": "SELECT DISTINCT A.account_id FROM card AS C INNER JOIN disp AS D ON C.disp_id = D.disp_id INNER JOIN account AS A ON D.account_id = A.account_id WHERE C.type = 'gold'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 88,
+                "pred_rows": 88,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:30.158686",
+            "query_id": "144",
+            "nl_query": "How much is the average amount in credit card made by account holders in a month, in year 2021?",
+            "sql_ground_truth": "SELECT AVG(T4.amount) FROM card AS T1 INNER JOIN disp AS T2 ON T1.disp_id = T2.disp_id INNER JOIN account AS T3 ON T2.account_id = T3.account_id INNER JOIN trans AS T4 ON T3.account_id = T4.account_id WHERE STRFTIME('%Y', T4.date) = '1998' AND T4.operation = 'VYBER KARTOU'",
+            "sql_predicted": "SELECT AVG(monthly_amount) AS average_monthly_amount FROM ( SELECT STRFTIME('%Y-%m', date) AS month, SUM(amount) AS monthly_amount FROM trans WHERE operation = 'VYBER KARTOU' AND STRFTIME('%Y', date) = '2021' GROUP BY month ) AS monthly_totals",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['2270.9429824561403'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.184927",
+            "query_id": "145",
+            "nl_query": "Who are the account holder identification numbers whose who have transactions on the credit card with the amount is less than the average, in 1998?",
+            "sql_ground_truth": "SELECT T1.account_id FROM trans AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id WHERE STRFTIME('%Y', T1.date) = '1998' AND T1.operation = 'VYBER KARTOU' AND T1.amount < (SELECT AVG(amount) FROM trans WHERE STRFTIME('%Y', date) = '1998')",
+            "sql_predicted": "SELECT DISTINCT d.client_id FROM trans t INNER JOIN account a ON t.account_id = a.account_id INNER JOIN disp d ON a.account_id = d.account_id WHERE t.operation = 'VYBER KARTOU' AND YEAR(t.date) = 1998 AND t.amount < ( SELECT AVG(t2.amount) FROM trans t2 WHERE t2.operation = 'VYBER KARTOU' AND YEAR(t2.date) = 1998 )",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 4484,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.189848",
+            "query_id": "146",
+            "nl_query": "Who are the female account holders who own credit cards and also have loans?",
+            "sql_ground_truth": "SELECT T1.client_id FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN account AS T5 ON T2.account_id = T5.account_id INNER JOIN loan AS T3 ON T5.account_id = T3.account_id INNER JOIN card AS T4 ON T2.disp_id = T4.disp_id WHERE T1.gender = 'F'",
+            "sql_predicted": "SELECT DISTINCT c.client_id FROM client AS c INNER JOIN disp AS d ON c.client_id = d.client_id INNER JOIN card AS cr ON d.disp_id = cr.disp_id INNER JOIN loan AS l ON d.account_id = l.account_id WHERE c.gender = 'F'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 85,
+                "pred_rows": 85,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.195852",
+            "query_id": "147",
+            "nl_query": "How many female clients' accounts are in the region of South Bohemia?",
+            "sql_ground_truth": "SELECT COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.gender = 'F' AND T2.A3 = 'south Bohemia'",
+            "sql_predicted": "SELECT COUNT(DISTINCT T1.account_id) FROM account AS T1 INNER JOIN disp AS T2 ON T1.account_id = T2.account_id INNER JOIN client AS T3 ON T2.client_id = T3.client_id INNER JOIN district AS T4 ON T1.district_id = T4.district_id WHERE T3.gender = 'F' AND T4.A3 = 'South Bohemia'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['231'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.202846",
+            "query_id": "148",
+            "nl_query": "Please list the accounts whose district is Tabor that are eligible for loans.",
+            "sql_ground_truth": "SELECT T2.account_id FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id INNER JOIN disp AS T3 ON T2.account_id = T3.account_id WHERE T3.type = 'OWNER' AND T1.A2 = 'Tabor'",
+            "sql_predicted": "SELECT DISTINCT a.account_id FROM account AS a INNER JOIN district AS d ON a.district_id = d.district_id INNER JOIN disp AS dp ON a.account_id = dp.account_id WHERE d.A2 = 'Tabor' AND dp.type = 'OWNER'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 48,
+                "pred_rows": 48,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.208848",
+            "query_id": "149",
+            "nl_query": "Please list the account types that are not eligible for loans, and the average income of residents in the district where the account is located exceeds $8000 but is no more than $9000.",
+            "sql_ground_truth": "SELECT T3.type FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id INNER JOIN disp AS T3 ON T2.account_id = T3.account_id WHERE T3.type != 'OWNER' AND T1.A11 BETWEEN 8000 AND 9000",
+            "sql_predicted": "SELECT DISTINCT d.type FROM disp d JOIN account a ON d.account_id = a.account_id JOIN district dist ON a.district_id = dist.district_id WHERE d.type <> 'OWNER' AND dist.A11 > 8000 AND dist.A11 <= 9000",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "STRICT_EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 461,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.480587",
+            "query_id": "150",
+            "nl_query": "How many accounts in North Bohemia has made a transaction with the partner's bank being AB?",
+            "sql_ground_truth": "SELECT COUNT(T2.account_id) FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id WHERE T3.bank = 'AB' AND T1.A3 = 'north Bohemia'",
+            "sql_predicted": "SELECT COUNT(DISTINCT T1.account_id) FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN trans AS T3 ON T1.account_id = T3.account_id WHERE T2.A3 = 'North Bohemia' AND T3.bank = 'AB'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['2260'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.985299",
+            "query_id": "151",
+            "nl_query": "Please list the name of the districts with accounts that made withdrawal transactions.",
+            "sql_ground_truth": "SELECT DISTINCT T1.A2 FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id WHERE T3.type = 'VYDAJ'",
+            "sql_predicted": "SELECT DISTINCT D.A2 AS district_name FROM district AS D INNER JOIN account AS A ON D.district_id = A.district_id INNER JOIN trans AS T ON A.account_id = T.account_id WHERE T.type = 'VYDAJ'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 77,
+                "pred_rows": 77,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.990299",
+            "query_id": "152",
+            "nl_query": "What is the average number of crimes committed in 1995 in regions where the number exceeds 4000 and the region has accounts that are opened starting from the year 1997?",
+            "sql_ground_truth": "SELECT AVG(T1.A15) FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id WHERE STRFTIME('%Y', T2.date) >= '1997' AND T1.A15 > 4000",
+            "sql_predicted": "SELECT AVG(d.A15) AS average_crimes_1995 FROM district d JOIN account a ON d.district_id = a.district_id WHERE d.A15 > 4000 AND a.date >= '1997-01-01'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.994385",
+            "query_id": "153",
+            "nl_query": "How many 'classic' cards are eligible for loan?",
+            "sql_ground_truth": "SELECT COUNT(T1.card_id) FROM card AS T1 INNER JOIN disp AS T2 ON T1.disp_id = T2.disp_id WHERE T1.type = 'classic' AND T2.type = 'OWNER'",
+            "sql_predicted": "SELECT COUNT(DISTINCT T1.card_id) FROM card AS T1 INNER JOIN disp AS T2 ON T1.disp_id = T2.disp_id INNER JOIN account AS T3 ON T2.account_id = T3.account_id WHERE T1.type = 'classic' AND T2.type = 'OWNER'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:31.998375",
+            "query_id": "154",
+            "nl_query": "How many male clients in 'Hl.m. Praha' district?",
+            "sql_ground_truth": "SELECT COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.gender = 'M' AND T2.A2 = 'Hl.m. Praha'",
+            "sql_predicted": "SELECT COUNT(C.client_id) FROM client AS C INNER JOIN district AS D ON C.district_id = D.district_id WHERE C.gender = 'M' AND D.A2 = 'Hl.m. Praha'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:32.000377",
+            "query_id": "155",
+            "nl_query": "How many percent of 'Gold' cards were issued prior to 1998?",
+            "sql_ground_truth": "SELECT CAST(SUM(type = 'gold' AND STRFTIME('%Y', issued) < '1998') AS REAL) * 100 / COUNT(card_id) FROM card",
+            "sql_predicted": "SELECT CAST(SUM(CASE WHEN type = 'Gold' AND issued < '1998-01-01' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(*) AS percentage_of_gold_cards FROM card",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['3.9237668161434978'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:32.006301",
+            "query_id": "156",
+            "nl_query": "Who is the owner of the account with the largest loan amount?",
+            "sql_ground_truth": "SELECT T1.client_id FROM disp AS T1 INNER JOIN account AS T3 ON T1.account_id = T3.account_id INNER JOIN loan AS T2 ON T3.account_id = T2.account_id WHERE T1.type = 'OWNER' ORDER BY T2.amount DESC LIMIT 1",
+            "sql_predicted": "SELECT c.client_id, c.gender, c.birth_date FROM loan l JOIN account a ON l.account_id = a.account_id JOIN disp d ON a.account_id = d.account_id JOIN client c ON d.client_id = c.client_id WHERE l.amount = (SELECT MAX(amount) FROM loan)",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Columns",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 3
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:32.008301",
+            "query_id": "157",
+            "nl_query": "What is the number of committed crimes in 1995 in the district of the account with the id 532?",
+            "sql_ground_truth": "SELECT T1.A15 FROM district AS T1 INNER JOIN `account` AS T2 ON T1.district_id = T2.district_id WHERE T2.account_id = 532",
+            "sql_predicted": "SELECT D.A15 AS crimes_1995 FROM account AS A INNER JOIN district AS D ON A.district_id = D.district_id WHERE A.account_id = 532",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:32.010302",
+            "query_id": "158",
+            "nl_query": "What is the district Id of the account that placed the order with the id 33333?",
+            "sql_ground_truth": "SELECT T3.district_id FROM `order` AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN district AS T3 ON T2.district_id = T3.district_id WHERE T1.order_id = 33333",
+            "sql_predicted": "SELECT A.district_id FROM `order` AS O INNER JOIN account AS A ON O.account_id = A.account_id WHERE O.order_id = 33333",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:33.021939",
+            "query_id": "159",
+            "nl_query": "List all the withdrawals in cash transactions that the client with the id 3356 makes.",
+            "sql_ground_truth": "SELECT T4.trans_id FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN account AS T3 ON T2.account_id = T3.account_id INNER JOIN trans AS T4 ON T3.account_id = T4.account_id WHERE T1.client_id = 3356 AND T4.operation = 'VYBER'",
+            "sql_predicted": "SELECT T3.trans_id, T3.date, T3.amount, T3.balance FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id WHERE T1.client_id = 3356 AND T3.operation = 'VYBER'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Columns",
+            "result_summary": {
+                "gt_rows": 140,
+                "pred_rows": 140,
+                "gt_cols": 1,
+                "pred_cols": 4
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:33.025944",
+            "query_id": "160",
+            "nl_query": "Among the weekly issuance accounts, how many have a loan of under 200000?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id WHERE T2.frequency = 'POPLATEK TYDNE' AND T1.amount < 200000",
+            "sql_predicted": "SELECT COUNT(DISTINCT a.account_id) FROM account a JOIN loan l ON a.account_id = l.account_id WHERE a.frequency = 'POPLATEK TYDNE' AND l.amount < 200000",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:33.028942",
+            "query_id": "161",
+            "nl_query": "What type of credit card does the client with the id 13539 own?",
+            "sql_ground_truth": "SELECT T3.type FROM disp AS T1 INNER JOIN client AS T2 ON T1.client_id = T2.client_id INNER JOIN card AS T3 ON T1.disp_id = T3.disp_id WHERE T2.client_id = 13539",
+            "sql_predicted": "SELECT T3.type FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN card AS T3 ON T2.disp_id = T3.disp_id WHERE T1.client_id = 13539",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:33.029948",
+            "query_id": "162",
+            "nl_query": "What is the region of the client with the id 3541 from?",
+            "sql_ground_truth": "SELECT T1.A3 FROM district AS T1 INNER JOIN client AS T2 ON T1.district_id = T2.district_id WHERE T2.client_id = 3541",
+            "sql_predicted": "SELECT T2.A3 AS Region FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.client_id = 3541",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:33.035936",
+            "query_id": "163",
+            "nl_query": "Which district has the most accounts with loan contracts finished with no problems?",
+            "sql_ground_truth": "SELECT T1.A2 FROM District AS T1 INNER JOIN Account AS T2 ON T1.District_id = T2.District_id INNER JOIN Loan AS T3 ON T2.Account_id = T3.Account_id WHERE T3.status = 'A' GROUP BY T1.District_id ORDER BY COUNT(T2.Account_id) DESC LIMIT 1",
+            "sql_predicted": "SELECT D.district_id FROM district AS D INNER JOIN client AS C ON D.district_id = C.district_id INNER JOIN disp AS DP ON C.client_id = DP.client_id INNER JOIN account AS A ON DP.account_id = A.account_id INNER JOIN loan AS L ON A.account_id = L.account_id WHERE L.status = 'A' GROUP BY D.district_id ORDER BY COUNT(DISTINCT A.account_id) DESC LIMIT 1",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['hl.m. praha'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:33.038939",
+            "query_id": "164",
+            "nl_query": "Who placed the order with the id 32423?",
+            "sql_ground_truth": "SELECT T3.client_id FROM `order` AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN disp AS T4 ON T4.account_id = T2.account_id  INNER JOIN client AS T3 ON T4.client_id = T3.client_id WHERE T1.order_id = 32423",
+            "sql_predicted": "SELECT T4.client_id, T4.gender, T4.birth_date FROM `order` AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN disp AS T3 ON T2.account_id = T3.account_id INNER JOIN client AS T4 ON T3.client_id = T4.client_id WHERE T1.order_id = 32423",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Columns",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 3
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:33.468212",
+            "query_id": "165",
+            "nl_query": "Please list all the transactions made by accounts from district 5.",
+            "sql_ground_truth": "SELECT T3.trans_id FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id WHERE T1.district_id = 5",
+            "sql_predicted": "SELECT T1.trans_id, T1.account_id, T1.date, T1.type, T1.operation, T1.amount, T1.balance, T1.k_symbol, T1.bank, T1.account FROM trans AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN district AS T3 ON T2.district_id = T3.district_id WHERE T3.district_id = 5",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Columns",
+            "result_summary": {
+                "gt_rows": 15140,
+                "pred_rows": 15140,
+                "gt_cols": 1,
+                "pred_cols": 10
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.071027",
+            "query_id": "166",
+            "nl_query": "How many of the accounts are from Jesenik district?",
+            "sql_ground_truth": "SELECT COUNT(T2.account_id) FROM district AS T1 INNER JOIN account AS T2 ON T1.district_id = T2.district_id WHERE T1.A2 = 'Jesenik'",
+            "sql_predicted": "SELECT COUNT(*) FROM account AS a INNER JOIN district AS d ON a.district_id = d.district_id WHERE d.A2 = 'Jesenik'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.073945",
+            "query_id": "167",
+            "nl_query": "List all the clients' IDs whose junior credit cards were issued after 1996.",
+            "sql_ground_truth": "SELECT T2.client_id FROM card AS T1 INNER JOIN disp AS T2 ON T1.disp_id = T2.disp_id WHERE T1.type = 'junior' AND T1.issued >= '1997-01-01'",
+            "sql_predicted": "SELECT DISTINCT C.client_id FROM card AS C INNER JOIN disp AS D ON C.disp_id = D.disp_id INNER JOIN client AS CL ON D.client_id = CL.client_id WHERE C.type = 'junior' AND C.issued >= '1997-01-01'",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 96,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.142536",
+            "query_id": "168",
+            "nl_query": "What percentage of clients who opened their accounts in the district with an average salary of over 10000 are women?",
+            "sql_ground_truth": "SELECT CAST(SUM(T2.gender = 'F') AS REAL) * 100 / COUNT(T2.client_id) FROM district AS T1 INNER JOIN client AS T2 ON T1.district_id = T2.district_id WHERE T1.A11 > 10000",
+            "sql_predicted": "SELECT CAST(COUNT(CASE WHEN C.gender = 'F' THEN 1 END) AS REAL) * 100 / COUNT(C.client_id) AS percentage_of_female_clients FROM client AS C INNER JOIN account AS A ON C.district_id = A.district_id INNER JOIN district AS D ON A.district_id = D.district_id WHERE D.A11 > 10000",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['49.609984399375975'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.147456",
+            "query_id": "169",
+            "nl_query": "What was the growth rate of the total amount of loans across all accounts for a male client between 1996 and 1997?",
+            "sql_ground_truth": "SELECT CAST((SUM(CASE WHEN STRFTIME('%Y', T1.date) = '1997' THEN T1.amount ELSE 0 END) - SUM(CASE WHEN STRFTIME('%Y', T1.date) = '1996' THEN T1.amount ELSE 0 END)) AS REAL) * 100 / SUM(CASE WHEN STRFTIME('%Y', T1.date) = '1996' THEN T1.amount ELSE 0 END) FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN disp AS T3 ON T3.account_id = T2.account_id INNER JOIN client AS T4 ON T4.client_id = T3.client_id WHERE T4.gender = 'M' AND T3.type = 'OWNER'",
+            "sql_predicted": "SELECT (SUM(CASE WHEN strftime('%Y', L.date) = '1997' THEN L.amount ELSE 0 END) - SUM(CASE WHEN strftime('%Y', L.date) = '1996' THEN L.amount ELSE 0 END)) * 100.0 / SUM(CASE WHEN strftime('%Y', L.date) = '1996' THEN L.amount ELSE 0 END) AS growth_rate FROM loan AS L INNER JOIN account AS A ON L.account_id = A.account_id INNER JOIN disp AS D ON A.account_id =",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.792343",
+            "query_id": "170",
+            "nl_query": "How many credit card withdrawals were recorded after 1995?",
+            "sql_ground_truth": "SELECT COUNT(account_id) FROM trans WHERE STRFTIME('%Y', date) > '1995' AND operation = 'VYBER KARTOU'",
+            "sql_predicted": "SELECT COUNT(*) FROM trans WHERE operation = 'VYBER KARTOU' AND date > '1995-12-31'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.794305",
+            "query_id": "171",
+            "nl_query": "What was the difference in the number of crimes committed in East and North Bohemia in 1996?",
+            "sql_ground_truth": "SELECT SUM(IIF(A3 = 'east Bohemia', A16, 0)) - SUM(IIF(A3 = 'north Bohemia', A16, 0)) FROM district",
+            "sql_predicted": "SELECT (SELECT A16 FROM district WHERE A3 = 'North Bohemia' AND A2 = '1996') - (SELECT A16 FROM district WHERE A3 = 'East Bohemia' AND A2 = '1996') AS crime_difference",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['-17734'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.797309",
+            "query_id": "172",
+            "nl_query": "How many owner and disponent dispositions are there from account number 1 to account number 10?",
+            "sql_ground_truth": "SELECT SUM(type = 'OWNER') , SUM(type = 'DISPONENT') FROM disp WHERE account_id BETWEEN 1 AND 10",
+            "sql_predicted": "SELECT type, COUNT(*) AS count FROM disp WHERE account_id BETWEEN 1 AND 10 GROUP BY type",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['10', '3'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 2,
+                "gt_cols": 2,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.799225",
+            "query_id": "173",
+            "nl_query": "How often does account number 3 request an account statement to be released? What was the aim of debiting 3539 in total?",
+            "sql_ground_truth": "SELECT T1.frequency, T2.k_symbol FROM account AS T1 INNER JOIN (SELECT account_id, k_symbol, SUM(amount) AS total_amount FROM `order` GROUP BY account_id, k_symbol) AS T2 ON T1.account_id = T2.account_id WHERE T1.account_id = 3 AND T2.total_amount = 3539",
+            "sql_predicted": "SELECT frequency FROM account WHERE account_id = 3; -- Query to find the purpose of debiting a total of 3539 SELECT k_symbol FROM trans WHERE account_id = 3 AND amount = 3539 AND type = 'debit'; ``` Explanation: - The first query retrieves the `frequency` from the `account` table for `account_id = 3`, which tells",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['poplatek mesicne', 'pojistne'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 2,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.801224",
+            "query_id": "174",
+            "nl_query": "What year was account owner number 130 born?",
+            "sql_ground_truth": "SELECT STRFTIME('%Y', T1.birth_date) FROM client AS T1 INNER JOIN disp AS T3 ON T1.client_id = T3.client_id INNER JOIN account AS T2 ON T3.account_id = T2.account_id WHERE T2.account_id = 130",
+            "sql_predicted": "SELECT EXTRACT(YEAR FROM C.birth_date) AS birth_year FROM disp AS D INNER JOIN client AS C ON D.client_id = C.client_id WHERE D.account_id = 130",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.805312",
+            "query_id": "175",
+            "nl_query": "How many accounts have an owner disposition and request for a statement to be generated upon a transaction?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM account AS T1 INNER JOIN disp AS T2 ON T1.account_id = T2.account_id WHERE T2.type = 'OWNER' AND T1.frequency = 'POPLATEK PO OBRATU'",
+            "sql_predicted": "SELECT COUNT(DISTINCT A.account_id) FROM account AS A INNER JOIN disp AS D ON A.account_id = D.account_id WHERE D.type = 'OWNER' AND A.frequency = 'POPLATEK PO OBRATU'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:40.808249",
+            "query_id": "176",
+            "nl_query": "What is the amount of debt that client number 992 has, and how is this client doing with payments?",
+            "sql_ground_truth": "SELECT T4.amount, T4.status FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN account AS T3 on T2.account_id = T3.account_id INNER JOIN loan AS T4 ON T3.account_id = T4.account_id WHERE T1.client_id = 992",
+            "sql_predicted": "SELECT d.account_id FROM disp d WHERE d.client_id = 992 ), -- Step 2: Find loans and their statuses for these accounts client_loans AS ( SELECT l.loan_id,",
+            "token_stats": {},
+            "execution_status": "SQL_ERROR",
+            "match_type": "NONE",
+            "failure_reason": "SQL Execution Failed: Query returned None",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 2,
+                "pred_cols": 0
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:45.317052",
+            "query_id": "177",
+            "nl_query": "What is the sum that client number 4's account has following transaction 851? Who owns this account, a man or a woman?",
+            "sql_ground_truth": "SELECT T4.balance, T1.gender FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN account AS T3 ON T2.account_id =T3.account_id INNER JOIN trans AS T4 ON T3.account_id = T4.account_id WHERE T1.client_id = 4 AND T4.trans_id = 851",
+            "sql_predicted": "SELECT T1.balance AS AccountBalanceAfterTransaction, T5.gender AS AccountOwnerGender FROM trans AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN disp AS T3 ON T2.account_id = T3.account_id INNER JOIN client AS T5 ON T3.client_id = T5.client_id WHERE T1.trans_id",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Rows",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1262625,
+                "gt_cols": 2,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:45.842076",
+            "query_id": "178",
+            "nl_query": "Which kind of credit card does client number 9 possess?",
+            "sql_ground_truth": "SELECT T3.type FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN card AS T3 ON T2.disp_id = T3.disp_id WHERE T1.client_id = 9",
+            "sql_predicted": "SELECT card.type FROM client INNER JOIN disp ON client.client_id = disp.client_id INNER JOIN card ON disp.disp_id = card.disp_id WHERE client.client_id = 9",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:48.775739",
+            "query_id": "179",
+            "nl_query": "How much, in total, did client number 617 pay for all of the transactions in 1998?",
+            "sql_ground_truth": "SELECT SUM(T3.amount) FROM client AS T1 INNER JOIN disp AS T4 ON T1.client_id = T4.client_id INNER JOIN account AS T2 ON T4.account_id = T2.account_id INNER JOIN trans AS T3 ON T2.account_id = T3.account_id WHERE STRFTIME('%Y', T3.date)= '1998' AND T1.client_id = 617",
+            "sql_predicted": "SELECT SUM(t.amount) AS total_paid FROM client c INNER JOIN disp d ON c.client_id = d.client_id INNER JOIN account a ON d.account_id = a.account_id INNER JOIN trans t ON a.account_id = t.account",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['303276'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:48.782752",
+            "query_id": "180",
+            "nl_query": "Please provide a list of clients who were born between 1983 and 1987 and whose account branch is in East Bohemia, along with their IDs.",
+            "sql_ground_truth": "SELECT T1.client_id, T3.account_id FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN disp AS T4 ON T1.client_id = T4.client_id INNER JOIN account AS T3 ON T2.district_id = T3.district_id and T4.account_id = T3.account_id WHERE T2.A3 = 'east Bohemia' AND STRFTIME('%Y', T1.birth_date) BETWEEN '1983' AND '1987'",
+            "sql_predicted": "SELECT C.client_id, C.gender, C.birth_date FROM client AS C INNER JOIN disp AS D ON C.client_id = D.client_id INNER JOIN account AS A ON D.account_id = A.account_id INNER JOIN district AS DI ON A.district_id = DI.district_id WHERE C.birth_date BETWEEN '1983-01-01' AND '1987-12-31' AND DI.A2 = 'East Bohemia'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 3, Got 0",
+            "result_summary": {
+                "gt_rows": 3,
+                "pred_rows": 0,
+                "gt_cols": 2,
+                "pred_cols": 3
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:48.788427",
+            "query_id": "181",
+            "nl_query": "Please provide the IDs of the 3 female clients with the largest loans.",
+            "sql_ground_truth": "SELECT T1.client_id FROM client AS T1 INNER JOIN disp AS T4 on T1.client_id= T4.client_id INNER JOIN account AS T2 ON T4.account_id = T2.account_id  INNER JOIN loan AS T3 ON T2.account_id = T3.account_id and T4.account_id = T3.account_id WHERE T1.gender = 'F' ORDER BY T3.amount DESC LIMIT 3",
+            "sql_predicted": "SELECT c.client_id FROM client AS c INNER JOIN disp AS d ON c.client_id = d.client_id INNER JOIN loan AS l ON d.account_id = l.account_id WHERE c.gender = 'F' ORDER BY l.amount DESC LIMIT 3",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 3,
+                "pred_rows": 3,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:49.101009",
+            "query_id": "182",
+            "nl_query": "How many male customers who were born between 1974 and 1976 have made a payment on their home in excess of $4000?",
+            "sql_ground_truth": "SELECT COUNT(T1.account_id) FROM trans AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id INNER JOIN disp AS T4 ON T2.account_id = T4.account_id INNER JOIN client AS T3 ON T4.client_id = T3.client_id WHERE STRFTIME('%Y', T3.birth_date) BETWEEN '1974' AND '1976' AND T3.gender = 'M' AND T1.amount > 4000 AND T1.k_symbol = 'SIPO'",
+            "sql_predicted": "SELECT COUNT(DISTINCT c.client_id) AS male_customers_count FROM client c JOIN disp d ON c.client_id = d.client_id JOIN account a ON d.account_id = a.account_id JOIN trans t ON a.account_id = t.account_id WHERE c.gender = 'M' AND strftime('%Y', c.birth_date) BETWEEN '1974' AND '1976' AND t.amount > 4000 AND t.k_symbol = 'SIPO'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['1556'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:49.105987",
+            "query_id": "183",
+            "nl_query": "How many accounts in Beroun were opened after 1996?",
+            "sql_ground_truth": "SELECT COUNT(account_id) FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE STRFTIME('%Y', T1.date) > '1996' AND T2.A2 = 'Beroun'",
+            "sql_predicted": "SELECT COUNT(a.account_id) FROM account AS a INNER JOIN district AS d ON a.district_id = d.district_id WHERE d.A2 = 'Beroun' AND a.date > '1996-12-31'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:49.107988",
+            "query_id": "184",
+            "nl_query": "How many female customers have a junior credit card?",
+            "sql_ground_truth": "SELECT COUNT(T1.client_id) FROM client AS T1 INNER JOIN disp AS T2 ON T1.client_id = T2.client_id INNER JOIN card AS T3 ON T2.disp_id = T3.disp_id WHERE T1.gender = 'F' AND T3.type = 'junior'",
+            "sql_predicted": "SELECT COUNT(DISTINCT C.client_id) FROM client AS C INNER JOIN disp AS D ON C.client_id = D.client_id INNER JOIN card AS CA ON D.disp_id = CA.disp_id WHERE C.gender = 'F' AND CA.type = 'junior credit card'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['71'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:49.113990",
+            "query_id": "185",
+            "nl_query": "What proportion of customers who have accounts at the Prague branch are female?",
+            "sql_ground_truth": "SELECT CAST(SUM(T2.gender = 'F') AS REAL) / COUNT(T2.client_id) * 100 FROM district AS T1 INNER JOIN client AS T2 ON T1.district_id = T2.district_id WHERE T1.A3 = 'Prague'",
+            "sql_predicted": "SELECT CAST(SUM(CASE WHEN C.gender = 'F' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(*) AS female_percentage FROM client AS C INNER JOIN disp AS D ON C.client_id = D.client_id INNER JOIN account AS A ON D.account_id = A.account_id INNER JOIN district AS DI ON A.district_id = DI.district_id WHERE DI.A3 = 'Prague'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['48.86877828054298'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:49.117988",
+            "query_id": "186",
+            "nl_query": "What percentage of male clients request for weekly statements to be issued?",
+            "sql_ground_truth": "SELECT CAST(SUM(T1.gender = 'M') AS REAL) * 100 / COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T3 ON T1.district_id = T3.district_id INNER JOIN account AS T2 ON T2.district_id = T3.district_id INNER JOIN disp as T4 on T1.client_id = T4.client_id AND T2.account_id = T4.account_id WHERE T2.frequency = 'POPLATEK TYDNE'",
+            "sql_predicted": "SELECT CAST(SUM(CASE WHEN C.gender = 'M' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(D.disp_id) AS percentage FROM disp AS D INNER JOIN client AS C ON D.client_id = C.client_id INNER JOIN account AS A ON D.account_id = A.account_id WHERE A.frequency = 'POPLATEK TYDNE'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['52.63157894736842'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:49.121997",
+            "query_id": "187",
+            "nl_query": "How many clients who choose statement of weekly issuance are Owner?",
+            "sql_ground_truth": "SELECT COUNT(T2.account_id) FROM account AS T1 INNER JOIN disp AS T2 ON T2.account_id = T1.account_id WHERE T1.frequency = 'POPLATEK TYDNE' AND T2.type = 'OWNER'",
+            "sql_predicted": "SELECT COUNT(DISTINCT T3.client_id) FROM account AS T1 INNER JOIN disp AS T2 ON T1.account_id = T2.account_id INNER JOIN client AS T3 ON T2.client_id = T3.client_id WHERE T1.frequency = 'POPLATEK TYDNE' AND T2.type = 'Owner'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['240'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:49.124990",
+            "query_id": "188",
+            "nl_query": "Among the accounts who have loan validity more than 24 months, list out the accounts that have the lowest approved amount and have account opening date before 1997.",
+            "sql_ground_truth": "SELECT T1.account_id FROM loan AS T1 INNER JOIN account AS T2 ON T1.account_id = T2.account_id WHERE T1.duration > 24 AND STRFTIME('%Y', T2.date) < '1997' ORDER BY T1.amount ASC LIMIT 1",
+            "sql_predicted": "SELECT a.account_id FROM account a JOIN loan l ON a.account_id = l.account_id WHERE l.duration > 24 AND a.date < '1997-01-01' AND l.status = 'approved' ORDER BY l.amount ASC LIMIT 1",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row Count Mismatch: Expected 1, Got 0",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 0,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:51.495229",
+            "query_id": "189",
+            "nl_query": "Name the account numbers of female clients who are oldest and have lowest average salary?",
+            "sql_ground_truth": "SELECT T3.account_id FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN account AS T3 ON T2.district_id = T3.district_id INNER JOIN disp AS T4 ON T1.client_id = T4.client_id AND T4.account_id = T3.account_id  WHERE T1.gender = 'F' ORDER BY T1.birth_date ASC, T2.A11 ASC LIMIT 1",
+            "sql_predicted": "SELECT DISTINCT a.account_id FROM client c JOIN disp d ON c.client_id = d.client_id JOIN account a",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Rows",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 4500,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:51.504143",
+            "query_id": "190",
+            "nl_query": "How many clients who were born in 1920 stay in east Bohemia?",
+            "sql_ground_truth": "SELECT COUNT(T1.client_id) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE STRFTIME('%Y', T1.birth_date) = '1920' AND T2.A3 = 'east Bohemia'",
+            "sql_predicted": "SELECT COUNT(DISTINCT C.client_id) FROM client AS C INNER JOIN district AS D ON C.district_id = D.district_id WHERE strftime('%Y', C.birth_date) = '1920' AND D.A3 = 'East Bohemia'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['6'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:51.506146",
+            "query_id": "191",
+            "nl_query": "How many loan accounts are for pre-payment of duration of 24 months with weekly issuance of statement.",
+            "sql_ground_truth": "SELECT COUNT(T2.account_id) FROM account AS T1 INNER JOIN loan AS T2 ON T1.account_id = T2.account_id WHERE T2.duration = 24 AND T1.frequency = 'POPLATEK TYDNE'",
+            "sql_predicted": "SELECT COUNT(DISTINCT loan.account_id) FROM loan INNER JOIN account ON loan.account_id = account.account_id WHERE loan.duration = 24 AND loan.status = 'A' -- Assuming 'A' refers to pre-payment status AND account.frequency = 'POPLATEK TYDNE'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['15'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:51.647414",
+            "query_id": "192",
+            "nl_query": "What is the average amount of loan which are still on running contract with statement issuance after each transaction?",
+            "sql_ground_truth": "SELECT AVG(T2.amount) FROM account AS T1 INNER JOIN loan AS T2 ON T1.account_id = T2.account_id WHERE T2.status IN ('C', 'D') AND T1.frequency = 'POPLATEK PO OBRATU'",
+            "sql_predicted": "SELECT AVG(l.amount) AS average_loan_amount FROM loan l JOIN trans t ON l.account_id = t.account_id WHERE l.status IN ('C', 'D') AND t.k_symbol = 'POPLATEK PO OBRATU'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['192836.57142857142'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 1,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:51.681409",
+            "query_id": "193",
+            "nl_query": "List all ID and district for clients that can only have the right to issue permanent orders or apply for loans.",
+            "sql_ground_truth": "SELECT T3.client_id, T2.district_id, T2.A2 FROM account AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN disp AS T3 ON T1.account_id = T3.account_id WHERE T3.type = 'OWNER'",
+            "sql_predicted": "SELECT C.client_id, D.A2 AS district FROM client AS C INNER JOIN disp AS Dp ON C.client_id = Dp.client_id INNER JOIN account AS A ON Dp.account_id = A.account_id INNER JOIN district AS D ON C.district_id = D.district_id WHERE Dp.type = 'OWNER'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "WRONG",
+            "failure_reason": "Row ['1', '18', 'pisek'] (as set) not found in prediction rows (subset check).",
+            "result_summary": {
+                "gt_rows": 4500,
+                "pred_rows": 4500,
+                "gt_cols": 3,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:51.688499",
+            "query_id": "194",
+            "nl_query": "Provide the IDs and age of the client with high level credit card, which is eligible for loans.",
+            "sql_ground_truth": "SELECT T1.client_id, STRFTIME('%Y', CURRENT_TIMESTAMP) - STRFTIME('%Y', T3.birth_date) FROM disp AS T1 INNER JOIN card AS T2 ON T2.disp_id = T1.disp_id INNER JOIN client AS T3 ON T1.client_id = T3.client_id WHERE T2.type = 'gold' AND T1.type = 'OWNER'",
+            "sql_predicted": "SELECT C.client_id, (STRFTIME('%Y', 'now') - STRFTIME('%Y', C.birth_date)) AS age FROM client AS C INNER JOIN disp AS D ON C.client_id = D.client_id INNER JOIN card AS CR ON D.disp_id = CR.disp_id WHERE CR.type = 'gold' AND D.type = 'OWNER'",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "EXACT_MATCH",
+            "failure_reason": null,
+            "result_summary": {
+                "gt_rows": 88,
+                "pred_rows": 88,
+                "gt_cols": 2,
+                "pred_cols": 2
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:52.619827",
+            "query_id": "101",
+            "nl_query": "List out the accounts who have the earliest trading date in 1995 ?",
+            "sql_ground_truth": "SELECT account_id FROM trans WHERE STRFTIME('%Y', date) = '1995' ORDER BY date ASC LIMIT 1",
+            "sql_predicted": "SELECT account_id FROM trans WHERE date = ( SELECT MIN(date) FROM trans WHERE date BETWEEN '1995-01-01' AND '1995-12-31' )",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Rows",
+            "result_summary": {
+                "gt_rows": 1,
+                "pred_rows": 359,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        },
+        {
+            "timestamp": "2026-01-09T12:06:55.018787",
+            "query_id": "189",
+            "nl_query": "Name the account numbers of female clients who are oldest and have lowest average salary?",
+            "sql_ground_truth": "SELECT T3.account_id FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id INNER JOIN account AS T3 ON T2.district_id = T3.district_id WHERE T1.gender = 'F' AND T1.birth_date = (SELECT MIN(birth_date) FROM client WHERE gender = 'F') AND T2.A11 = (SELECT MIN(T2.A11) FROM client AS T1 INNER JOIN district AS T2 ON T1.district_id = T2.district_id WHERE T1.gender = 'F' AND T1.birth_date = (SELECT MIN(birth_date) FROM client WHERE gender = 'F'))",
+            "sql_predicted": "SELECT DISTINCT a.account_id FROM client c JOIN disp d ON c.client_id = d.client_id JOIN account a",
+            "token_stats": {},
+            "execution_status": "SUCCESS",
+            "match_type": "SUPER_SOFT_MATCH",
+            "failure_reason": "Logic Correct (Smart Map): Extra Rows",
+            "result_summary": {
+                "gt_rows": 49,
+                "pred_rows": 4500,
+                "gt_cols": 1,
+                "pred_cols": 1
+            }
+        }
+    ]
+}
