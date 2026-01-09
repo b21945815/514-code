@@ -259,8 +259,12 @@ class JSONToSQLCompiler:
                     else:
                         formatted_items.append(str(item))
                 return f"({', '.join(formatted_items)})"
-            else:
-                return f"'{value}'" if isinstance(value, str) else str(value)
+            if isinstance(value, str):
+                if value.strip().startswith('('):
+                    return value
+                
+                return f"'{value}'"
+            return str(value)
         
         elif v_type == 'COLUMN':
             return value

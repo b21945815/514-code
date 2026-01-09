@@ -38,9 +38,9 @@ def update_stats(stats, res):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_file", type=str, default="results/pipeline_test_report_with_hint.jsonl", help="Girdi dosyası (.jsonl)")
-    parser.add_argument("--output_file", type=str, default="results/pipeline_test_report_reprocessed.jsonl", help="Çıktı dosyası (.jsonl)")
-    parser.add_argument("--stats_file", type=str, default="results/pipeline_test_stats_reprocessed.json", help="İstatistik dosyası (.json)")
+    parser.add_argument("--input_file", type=str, default="results/pipeline_test_report.jsonl", help="Girdi dosyası (.jsonl)")
+    parser.add_argument("--output_file", type=str, default="results/pipeline_test_report_reprocessed_without_hint.jsonl", help="Çıktı dosyası (.jsonl)")
+    parser.add_argument("--stats_file", type=str, default="results/pipeline_test_stats_reprocessed_without_hint.json", help="İstatistik dosyası (.json)")
     parser.add_argument("--db_path", type=str, default="financial.sqlite", help="Veritabanı dosyası yolu")
     args = parser.parse_args()
 
