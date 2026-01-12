@@ -14,7 +14,7 @@ venv/
 .env
 .DS_Store
 Thumbs.db
-
+data/
 *.log
 
 chroma_db/

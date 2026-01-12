@@ -16,7 +16,8 @@ def update_stats(stats, res):
     elif status == "completed":
         if "steps" in res and "evaluator" in res["steps"]:
             match_type = res["steps"]["evaluator"].get("match_type")
-            
+            total_token = res["metrics"].get("total_tokens")
+            stats["total_tokens"] += total_token
             if match_type == "EXACT_MATCH":
                 stats["exact_match"] += 1
                 stats["success"] += 1
@@ -38,9 +39,9 @@ def update_stats(stats, res):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_file", type=str, default="results/pipeline_test_report_gpt.jsonl")
-    parser.add_argument("--output_file", type=str, default="results/pipeline_test_report_reprocessed_without_hint.jsonl")
-    parser.add_argument("--stats_file", type=str, default="results/pipeline_test_stats_reprocessed_without_hint.json")
+    parser.add_argument("--input_file", type=str, default="results/pipeline_test_report.jsonl")
+    parser.add_argument("--output_file", type=str, default="results/pipeline_test_report_2.jsonl")
+    parser.add_argument("--stats_file", type=str, default="results/pipeline_test_report_summary_2.json")
     parser.add_argument("--db_path", type=str, default="financial.sqlite")
     args = parser.parse_args()
 
@@ -59,7 +60,8 @@ def main():
         "super_soft_match": 0,
         "wrong": 0,
         "errors": 0,
-        "router_filtered": 0
+        "router_filtered": 0,
+        "total_tokens": 0
     }
 
 
@@ -149,7 +151,7 @@ def main():
     os.makedirs(os.path.dirname(args.stats_file), exist_ok=True)
     with open(args.stats_file, 'w', encoding='utf-8') as f_stats:
         json.dump(stats, f_stats, indent=4)
-    print(f"İstatistikler kaydedildi: {args.stats_file}")
+    print(f"Saved: {args.stats_file}")
 
 if __name__ == "__main__":
     main()

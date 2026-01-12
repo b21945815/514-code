@@ -14,8 +14,7 @@ class BirdSQLPipeline:
                  model="groq",
                  router_path="./my_router_model", 
                  db_info_path="info/database_info.json", 
-                 db_path="financial.sqlite",
-                 log_file="evaluation_results.json"):
+                 db_path="financial.sqlite"):
         
         print("Initializing BirdSQL Pipeline...")
         
