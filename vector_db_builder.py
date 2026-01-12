@@ -11,7 +11,9 @@ class VectorDBBuilder:
     def __init__(self, db_path, info_path, db_id='financial'):
         self.db_path = db_path
         self.db_id = db_id
-        
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        info_path = os.path.join(BASE_DIR, 'info', info_path)
+        info_path = os.path.abspath(info_path)
         # Load Metadata
         with open(info_path, 'r', encoding='utf-8') as f:
             self.full_info = json.load(f)
@@ -39,7 +41,7 @@ class VectorDBBuilder:
             table, col = full_col_name.split('.')
             print(f"\nProcessing: {full_col_name}")
             
-            # 1. Create/Get Collection
+            # 1. Make/Get Collection
             collection_name = f"{table}_{col}"
             try:
                 self.chroma_client.delete_collection(name=collection_name)
@@ -106,7 +108,9 @@ class VectorDBBuilder:
             print(f" - {col.name}")
 
 if __name__ == "__main__":
-    DB_PATH = './data/dev_20240627/dev_databases/financial/financial.sqlite'
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DB_PATH = os.path.join(BASE_DIR, 'data', 'dev_20240627', 'dev_databases', 'financial', 'financial.sqlite')
+    DB_PATH = os.path.abspath(DB_PATH)
     if not os.path.exists(DB_PATH):
         print(f"ERROR: DB file could not find in:\n{DB_PATH}")
         print("please try 'find . -name financial.sqlite' in terminal and paste here in the code.")
@@ -114,7 +118,7 @@ if __name__ == "__main__":
         
     builder = VectorDBBuilder(
         db_path=DB_PATH,
-        info_path='info/database_info_mappings.json'
+        info_path='database_info_mappings.json'
     )
     builder.build_collections()
     builder.list_collections()
