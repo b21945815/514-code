@@ -7,5 +7,6 @@
     "super_soft_match": 11,
     "wrong": 37,
     "errors": 9,
-    "router_filtered": 0
+    "router_filtered": 0,
+    "total_tokens": 325846
 }

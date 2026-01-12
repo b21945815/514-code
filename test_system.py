@@ -24,7 +24,8 @@ def update_stats(stats, res):
     elif status == "completed":
         if "steps" in res and "evaluator" in res["steps"]:
             match_type = res["steps"]["evaluator"].get("match_type")
-            
+            total_token = res["metrics"].get("total_tokens")
+            stats["total_tokens"] += total_token
             if match_type == "EXACT_MATCH":
                 stats["exact_match"] += 1
                 stats["success"] += 1
@@ -74,7 +75,8 @@ def main():
         "super_soft_match": 0,
         "wrong": 0,
         "errors": 0,
-        "router_filtered": 0
+        "router_filtered": 0,
+        "total_tokens": 0
     }
     processed_count = 0
     if os.path.exists(args.output):
