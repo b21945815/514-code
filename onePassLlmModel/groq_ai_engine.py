@@ -33,7 +33,7 @@ class GroqQueryDecomposer:
         """
         db_meta = self.db_info.get(db_id)
         if not db_meta:
-            return {"tasks": [{"is_achievable": False, "error": f"DB {db_id} not found"}]}
+            return {"tasks": [{"is_achievable": False, "error": f"DB {db_id} not found"}]}, 0
         if hint and hint.strip():
             full_prompt = DECOMPOSITION_PROMPT_WITH_HINT_TEMPLATE.format(
                 db_metadata=json.dumps(db_meta, indent=2),
@@ -59,4 +59,4 @@ class GroqQueryDecomposer:
         
         except Exception as e:
             print(e)
-            return {"tasks": [{"is_achievable": False, "error": str(e)}]}
+            return {"tasks": [{"is_achievable": False, "error": str(e)}]}, 0

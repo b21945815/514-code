@@ -149,7 +149,7 @@ def main():
     os.makedirs(os.path.dirname(args.stats_file), exist_ok=True)
     with open(args.stats_file, 'w', encoding='utf-8') as f_stats:
         json.dump(stats, f_stats, indent=4)
-    print(f"İstatistikler kaydedildi: {args.stats_file}")
+    print(f"Saved: {args.stats_file}")
 
 if __name__ == "__main__":
     main()

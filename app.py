@@ -1,6 +1,7 @@
 import streamlit as st
 from onePassLlmModel.router_model_helper import load_router, predict_intent
 from onePassLlmModel.groq_ai_engine import GroqQueryDecomposer
+from onePassLlmModel.gpt_ai_engine import GptQueryDecomposer
 from onePassLlmModel.sql_compiler import JSONToSQLCompiler
 
 st.set_page_config(page_title="BirdSQL Execution Plan", layout="wide")
@@ -8,17 +9,18 @@ st.set_page_config(page_title="BirdSQL Execution Plan", layout="wide")
 @st.cache_resource
 def init_models():
     tokenizer, model = load_router("./my_router_model")
-    decomposer = GroqQueryDecomposer("info/database_info.json")
-    return tokenizer, model, decomposer
+    decomposerGROQ = GroqQueryDecomposer("info/database_info.json")
+    decomposerGPT = GptQueryDecomposer("info/database_info.json")
+    return tokenizer, model, decomposerGPT, decomposerGROQ
 
-tokenizer, model, decomposer = init_models()
+tokenizer, model, decomposerGPT, decomposerGROQ = init_models()
 
 st.sidebar.title("🗄️ Control Panel")
-selected_db = st.sidebar.selectbox("Active Database", ["financial"])
+selected_db = st.sidebar.selectbox("Active Model", ["GROQ", "GPT"])
 
 st.title("BirdSQL Pipeline Visualizer")
 
-user_input = st.text_input("Enter your complex query:", placeholder="e.g., Get loans in Prague UNION get clients with gold cards")
+user_input = st.text_input("Enter your query:", placeholder="e.g., Get loans in Prague UNION get clients with gold cards")
 
 if user_input:
     intent, score = predict_intent(user_input, tokenizer, model)
@@ -36,7 +38,11 @@ if user_input:
             """)
     else:
         with st.spinner("Generating Logical Execution Plan..."):
-            response, total_tokens = decomposer.decompose_query(selected_db, user_input, None)
+            if selected_db == "GPT":
+                print(111)
+                response, total_tokens = decomposerGPT.decompose_query("financial", user_input, None)
+            else:
+                response, total_tokens = decomposerGROQ.decompose_query("financial", user_input, None)
             tasks = response.get("tasks", [])
             
             st.divider()

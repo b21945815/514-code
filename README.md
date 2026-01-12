@@ -4,26 +4,25 @@ DATA
  --dev_20240627
  --train
 
+update your environment via environment.yml file
+
 make .env file
 set GROQ_API_KEY=key
+OPENAI_API_KEY=key
 
-run router_model.py to train router model
-run vector_db_builder.py
-run app.py with streamlit
- 
-BASELINE RESULTS COME FROM
-https://github.com/b21945815/Few-shot-NL2SQL-with-prompting
-https://github.com/b21945815/DAIL-SQL
-They updated to run with with gpt-4o (for financial dataset)
-especially for DAIL-SQL the  script or code need more update to provide more correct examples with gpt4-o
+run router_model.py to train router model (train data only needed here, it is very big so we could not share, you can use test data as well via updating the code)
+row 147 148 should be uncommented if you have train data
 
-You should have the same DATA format
+run vector_db_builder.py to build vector database records
 
-Few-shot-NL2SQL-with-prompting
-prepare your .env
-run DIN-SQL_BIRD.py
+run app.py with "streamlit run app.py" command
 
-For DAIL-SQL
-run prepare_financial_data.py
-prepare your .env
-run run_for_bird.sh (file end can be problem)
+
+reprocess_results.py is for testing changes for sql_compiler without asking AI again
+
+test_system.py run our testing
+
+info/database_info.json used in LLM script
+
+database_info_mappings.json used for vectorDB
+

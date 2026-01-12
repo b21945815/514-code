@@ -49,11 +49,12 @@ def main():
     parser.add_argument("--data_path", type=str, default="data/dev_20240627/dev.json")
     parser.add_argument("--data_path_2", type=str, default="data/dev_20240627/dev_tied_append.json")
     parser.add_argument("--limit", type=int, default=200)
-    parser.add_argument("--output", type=str, default="results/pipeline_test_report_with_hint.jsonl")
+    parser.add_argument("--output", type=str, default="results/pipeline_test_report.jsonl")
     parser.add_argument("--hint", type=bool, default=False)
+    parser.add_argument("--model", type=str, default="groq")
     args = parser.parse_args()
 
-    pipeline = BirdSQLPipeline(model="groq")
+    pipeline = BirdSQLPipeline(model=args.model)
 
     test_data = load_test_data(args.data_path)
     test_data_2 = load_test_data(args.data_path_2)
@@ -75,7 +76,6 @@ def main():
         "errors": 0,
         "router_filtered": 0
     }
-    print(len(test_data))
     processed_count = 0
     if os.path.exists(args.output):
         with open(args.output, 'r', encoding='utf-8') as f:
@@ -93,8 +93,10 @@ def main():
         test_data_to_process = test_data[processed_count:]
     else:
         return
-    # If you are writing to file that has data for the first line new line for the first new line will probably be missing
+
     with open(args.output, 'a', encoding='utf-8', buffering=1) as f:
+        if f.tell() > 0:
+            f.write('\n')
         for item in tqdm(test_data_to_process, desc="Processing Queries"):          
             query = item['question']
             gt_sql = item['SQL']

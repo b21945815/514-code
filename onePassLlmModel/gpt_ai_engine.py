@@ -25,7 +25,7 @@ class GptQueryDecomposer:
         with open(info_path, 'r', encoding='utf-8') as f:
             self.db_info = json.load(f)
 
-    # Hint is not implemented
+    # Hint is not implemented for gpt
     def decompose_query(self, db_id, user_query, hint=None):
         """
         Main function to call from other scripts.
@@ -33,7 +33,7 @@ class GptQueryDecomposer:
         """
         db_meta = self.db_info.get(db_id)
         if not db_meta:
-            return {"tasks": [{"is_achievable": False, "error": f"DB {db_id} not found"}]}
+            return {"tasks": [{"is_achievable": False, "error": f"DB {db_id} not found"}]}, 0
         
         full_prompt = DECOMPOSITION_OPEN_AI_PROMPT_TEMPLATE.format(
             db_metadata=json.dumps(db_meta, indent=2)
@@ -55,4 +55,4 @@ class GptQueryDecomposer:
         
         except Exception as e:
             print(e)
-            return {"tasks": [{"is_achievable": False, "error": str(e)}]}
+            return {"tasks": [{"is_achievable": False, "error": str(e)}]}, 0

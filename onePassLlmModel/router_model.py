@@ -32,7 +32,6 @@ if device.type == 'cuda':
 else:
     print("CPU is ready")
 
-# DATA SET (SPECIFY WITH CHOSEN DATASET)
 data = [
     # --- LABEL 0: GENERAL CHAT (50 Example) ---
     {"text": "Hello, how are you?", "label": 0},
@@ -145,8 +144,8 @@ def get_bird_queries(file_path, count):
     sampled = random.sample(bird_data, min(count, len(bird_data)))
     return [{"text": item['question'], "label": 1} for item in sampled]
 
-bird_train_queries = get_bird_queries('data/train/train.json', 50)
-data.extend(bird_train_queries)
+# bird_train_queries = get_bird_queries('data/train/train.json', 50)
+# data.extend(bird_train_queries)
 
 # DATA
 df = pd.DataFrame(data)
@@ -187,7 +186,7 @@ print("\nTraining Start")
 trainer.train()
 
 # 4. SAVE
-save_path = "./my_router_model"
+save_path = "./my_router_model2"
 model.save_pretrained(save_path)
 tokenizer.save_pretrained(save_path)
 print(f"\nModel saved to '{save_path}'")
