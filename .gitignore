@@ -12,7 +12,6 @@ my_router_model/
 env/
 venv/
 .env
-data/
 .DS_Store
 Thumbs.db
 

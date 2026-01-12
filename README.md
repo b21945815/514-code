@@ -10,7 +10,7 @@ set GROQ_API_KEY=key
 run router_model.py to train router model
 run vector_db_builder.py
 run app.py with streamlit
-
+ 
 BASELINE RESULTS COME FROM
 https://github.com/b21945815/Few-shot-NL2SQL-with-prompting
 https://github.com/b21945815/DAIL-SQL
