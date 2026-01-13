@@ -72,3 +72,23 @@
 24 - SQL logic is wrong
 25 - VectorDB result is wrong (high-level -> should be gold, maybe more powerful model will answer this correctly)
 26 - SQL logic is wrong
+27 - JSON output wrong
+28 - SQL logic is wrong
+29 - Ground truth is wrong - !!!!! Should use distinct
+30 - Extra group by in sql logic
+31 - Extra JOIN (maybe loan table need more description about what is it)
+32 - Ground truth is wrong - It should use percent of gold card not all cards
+33 - SQL Logic and vector db error (how it found VYBER)
+34 - SQL Logic error - Could not find the connection - join
+35 - JSON output wrong
+36 - SQL logic is wrong
+37 - VectorDB result is wrong
+38 - SQL Logic error
+39 - SQL Logic error
+40 - Join error
+41 - SQL Logic error
+42 - SQL Logic error
+43 - SQL Logic error
+44 - QL logic is wrong (For semantics we need to explain that it can use IN if it thinks there is more than one)
+45 - Different logic compared to ground truth, both are correct
+46 - SQL Logic error
