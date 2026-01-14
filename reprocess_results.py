@@ -3,7 +3,6 @@ import os
 import argparse
 from tqdm import tqdm
 from onePassLlmModel.sql_compiler import JSONToSQLCompiler
-from onePassLlmModel.sql_compiler import JSONToSQLCompiler
 from bird_evaluator import BirdEvaluator
 
 def update_stats(stats, res):
@@ -39,8 +38,9 @@ def update_stats(stats, res):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_file", type=str, default="results/pipeline_test_report.jsonl")
-    parser.add_argument("--output_file", type=str, default="results/pipeline_test_report_2.jsonl")
+    parser.add_argument("--input_file", type=str, default="results/pipeline_test_report_gpt.jsonl")
+    parser.add_argument("--output_file", type=str, default="results/pipeline_test_report_gpt2.jsonl")
+    parser.add_argument("--error_file", type=str, default="results/pipeline_test_report_gpt_errors.jsonl")
     parser.add_argument("--stats_file", type=str, default="results/pipeline_test_report_summary_2.json")
     parser.add_argument("--db_path", type=str, default="financial.sqlite")
     args = parser.parse_args()
@@ -64,9 +64,9 @@ def main():
         "total_tokens": 0
     }
 
-
     with open(args.input_file, 'r', encoding='utf-8') as fin, \
-         open(args.output_file, 'w', encoding='utf-8', buffering=1) as fout:
+         open(args.output_file, 'w', encoding='utf-8', buffering=1) as fout, \
+         open(args.error_file, 'w', encoding='utf-8', buffering=1) as ferr:
 
         lines = fin.readlines()
 
@@ -97,7 +97,9 @@ def main():
             if not json_plan or decomposer_res.get("status") != "success":
                 update_stats(stats, data)
                 fout.write(json.dumps(data, ensure_ascii=False) + "\n")
+                ferr.write(json.dumps(data, ensure_ascii=False) + "\n")
                 continue
+            
             step_compiler = {"status": "pending", "generated_sql": None}
             generated_sql = None
             
@@ -148,10 +150,17 @@ def main():
 
             fout.write(json.dumps(data, ensure_ascii=False) + "\n")
 
+            match_type = step_evaluator.get("match_type")
+            is_success = match_type in ["EXACT_MATCH", "STRICT_EXACT_MATCH", "SOFT_MATCH", "SUPER_SOFT_MATCH"]
+            
+            if data.get("status") != "completed" or not is_success:
+                ferr.write(json.dumps(data, ensure_ascii=False) + "\n")
+
     os.makedirs(os.path.dirname(args.stats_file), exist_ok=True)
     with open(args.stats_file, 'w', encoding='utf-8') as f_stats:
         json.dump(stats, f_stats, indent=4)
     print(f"Saved: {args.stats_file}")
+    print(f"Errors Saved: {args.error_file}")
 
 if __name__ == "__main__":
     main()
