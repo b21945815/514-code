@@ -134,10 +134,6 @@ class BirdEvaluator:
         if gt_res == pred_res:
             result_log["match_type"] = "EXACT_MATCH"
             return result_log
-        
-        if self._check_strict_accuracy(gt_res, pred_res):
-            result_log["match_type"] = "STRICT_EXACT_MATCH"
-            return result_log
 
         is_soft, soft_msg = self._check_soft_accuracy_ordered_mapped(gt_res, pred_res)
         
@@ -149,6 +145,10 @@ class BirdEvaluator:
             
             reason = f"Logic Correct (Smart Map): {', '.join(details)}" if details else "Column Order Differs"
             result_log["failure_reason"] = reason
+        
+        if self._check_strict_accuracy(gt_res, pred_res):
+            result_log["match_type"] = "STRICT_EXACT_MATCH"
+            return result_log
 
         is_soft, soft_msg = self._check_super_soft_accuracy(gt_res, pred_res)
         if is_soft:
