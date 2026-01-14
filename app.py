@@ -39,7 +39,6 @@ if user_input:
     else:
         with st.spinner("Generating Logical Execution Plan..."):
             if selected_db == "GPT":
-                print(111)
                 response, total_tokens = decomposerGPT.decompose_query("financial", user_input, None)
             else:
                 response, total_tokens = decomposerGROQ.decompose_query("financial", user_input, None)

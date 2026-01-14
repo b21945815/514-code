@@ -5,7 +5,7 @@ sys.path.append(os.getcwd())
 from openai import OpenAI
 from dotenv import load_dotenv
 import json
-from onePassLlmModel.templates import DECOMPOSITION_OPEN_AI_PROMPT_TEMPLATE 
+from onePassLlmModel.templates import DECOMPOSITION_OPEN_AI_PROMPT_TEMPLATE, DECOMPOSITION_OPEN_AI_PROMPT_TEMPLATE_WITH_HINT
 load_dotenv()
 
 class GptQueryDecomposer:
@@ -35,9 +35,15 @@ class GptQueryDecomposer:
         if not db_meta:
             return {"tasks": [{"is_achievable": False, "error": f"DB {db_id} not found"}]}, 0
         
-        full_prompt = DECOMPOSITION_OPEN_AI_PROMPT_TEMPLATE.format(
-            db_metadata=json.dumps(db_meta, indent=2)
-        )
+        if hint and hint.strip():
+            full_prompt = DECOMPOSITION_OPEN_AI_PROMPT_TEMPLATE_WITH_HINT.format(
+                db_metadata=json.dumps(db_meta, indent=2),
+                hint=hint
+            )
+        else:
+            full_prompt = DECOMPOSITION_OPEN_AI_PROMPT_TEMPLATE.format(
+                db_metadata=json.dumps(db_meta, indent=2)
+            )
 
         try:
             response = self.client.chat.completions.create(

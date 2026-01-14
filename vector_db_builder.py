@@ -99,7 +99,7 @@ class VectorDBBuilder:
                 print("   -> No data found!")
 
         conn.close()
-        print("\n✅ Vector Database Built Successfully in ./chroma_db")
+        print("\n Vector Database Built Successfully in ./chroma_db")
 
     def list_collections(self):
         collections = self.chroma_client.list_collections()

@@ -50,9 +50,9 @@ def main():
     parser.add_argument("--data_path", type=str, default="data/dev_20240627/dev.json")
     parser.add_argument("--data_path_2", type=str, default="data/dev_20240627/dev_tied_append.json")
     parser.add_argument("--limit", type=int, default=200)
-    parser.add_argument("--output", type=str, default="results/pipeline_test_report.jsonl")
-    parser.add_argument("--hint", type=bool, default=False)
-    parser.add_argument("--model", type=str, default="groq")
+    parser.add_argument("--output", type=str, default="results/pipeline_test_report_gpt_with_hint.jsonl")
+    parser.add_argument("--hint", type=bool, default=True)
+    parser.add_argument("--model", type=str, default="gpt")
     args = parser.parse_args()
 
     pipeline = BirdSQLPipeline(model=args.model)
@@ -102,7 +102,6 @@ def main():
         for item in tqdm(test_data_to_process, desc="Processing Queries"):          
             query = item['question']
             gt_sql = item['SQL']
-            args.hint = True
             if args.hint:
                 hint = item.get('evidence')
             else:

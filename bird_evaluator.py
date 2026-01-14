@@ -36,8 +36,8 @@ class BirdEvaluator:
         if len(pred_rows) < len(gt_rows):
             return False, f"Row Count Mismatch: Expected {len(gt_rows)}, Got {len(pred_rows)}"
         
-        if len(gt_rows) == 0:
-            return True, "Empty Result Match"
+        if len(gt_rows) == 0: 
+            return False, "Empty Result Not Match"
 
         if len(pred_rows[0]) < len(gt_rows[0]):
             return False, f"Column Count Mismatch: Expected {len(gt_rows[0])}+, Got {len(pred_rows[0])}"
