@@ -50,7 +50,7 @@
 02 - Ground truth is wrong - The database schema does not contain information about average salary by gender. The 'district' table only contains overall average salary data, not gender-specific data.
 03 - Half answered + Ground truth is also wrong - It uses MIN(A11) without filtering female and others
 04 - Filter order is wrong + Ground truth is also wrong - highest average salary part is missing
-05 - SQL design is wrong - Sub select parameter count is wrong
+05 - SQL logic is wrong - Sub select parameter count is wrong
 06 - SQL logic is wrong - Adding info about district_id columns can help
 07 - Ground truth is wrong - !!!!! Date filter is wrong in ground truth sql
 08 - VectorDB result is wrong
@@ -67,7 +67,7 @@
 19 - SQL logic is wrong
 20 - Select is wrong - database_info does not contain what is district_id :(
 21 - VectorDB result is wrong
-22 - SQL logic and VectorDB result wrong
+22 - SQL logic is wrong and VectorDB result wrong
 23 - SQL logic is wrong (For semantics we need to explain that it can use IN if it thinks there is more than one) also database_info does not contain what is district_id :(
 24 - SQL logic is wrong
 25 - VectorDB result is wrong (high-level -> should be gold, maybe more powerful model will answer this correctly)
@@ -75,20 +75,29 @@
 27 - JSON output wrong
 28 - SQL logic is wrong
 29 - Ground truth is wrong - !!!!! Should use distinct
-30 - Extra group by in sql logic
+30 - SQL logic is wrong Extra group by in sql logic
 31 - Extra JOIN (maybe loan table need more description about what is it)
 32 - Ground truth is wrong - It should use percent of gold card not all cards
-33 - SQL Logic and vector db error (how it found VYBER)
-34 - SQL Logic error - Could not find the connection - join
+33 - SQL logic is wrong and vector db error (how it found VYBER)
+34 - SQL logic is wrong - Could not find the connection - join
 35 - JSON output wrong
 36 - SQL logic is wrong
 37 - VectorDB result is wrong
-38 - SQL Logic error
-39 - SQL Logic error
+38 - SQL logic is wrong
+39 - SQL logic is wrong
 40 - Join error
-41 - SQL Logic error
-42 - SQL Logic error
-43 - SQL Logic error
-44 - QL logic is wrong (For semantics we need to explain that it can use IN if it thinks there is more than one)
+41 - JSON output wrong
+42 - JSON output wrong
+43 - SQL logic is wrong
+44 - SQL logic is wrong (For semantics we need to explain that it can use IN if it thinks there is more than one)
 45 - Different logic compared to ground truth, both are correct
-46 - SQL Logic error
+46 - SQL logic is wrong
+
+
+Error Category,Count,Share (%)
+General Logical Inference Failures,21
+Ground Truth & Evaluation Validity,9
+Output Format Compliance,8
+Value Retrieval & Schema Linking,7
+Missing Info in Prompt,4
+Total,46
