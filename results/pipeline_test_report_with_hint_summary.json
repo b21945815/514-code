@@ -8,5 +8,6 @@
     "wrong": 39,
     "errors": 4,
     "router_filtered": 0,
-    "total_tokens": 435705
+    "total_tokens": 435705,
+    "average_tokens_per_report": 4034
 }
